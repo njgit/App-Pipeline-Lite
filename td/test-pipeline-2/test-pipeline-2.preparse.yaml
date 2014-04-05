@@ -1,0 +1,6 @@
+--- 
+assemble.once: cd [% assemble %]; echo "[% jobs.cufflinks.transcripts.gtf %]" | sed -e 's/\s\+/\n/g' > [% assemble.assemblies.txt %] 2>[% assemble.err %]
+cufflinks.: cd [% cufflinks %]; cufflinks -g /lustre/scratch110/sanger/sd11/Documents/GenomeFiles/human/gene_sets/Homo_sapiens.hg19.nochr.gtf -p 4 -o [% cufflinks. %] [% datasource.infile %] 2>[% cufflinks.err %]
+cufflinks.mem: 15000
+cuffmerge.once: cd [% cuffmerge %]; cuffmerge -g /lustre/scratch110/sanger/sd11/Documents/GenomeFiles/human/gene_sets/Homo_sapiens.hg19.nochr.gtf -s /lustre/scratch110/sanger/sd11/Documents/GenomeFiles/human/ref_genomes/hs37d5.fa -o [% cuffmerge. %] [% assemble.assemblies.txt %] 2>[% cuffmerge.err %]
+something-else.: cd [% something-else %]; echo [% assemble.assemblies.txt %] > [% something-else.assemblies.txt %] 2>[% something-else.err %]

@@ -1,0 +1,13 @@
+--- 
+apply-software.: cd [% apply-software %];  "source /lustre/scratch110/sanger/sd11/pipelines/pipelite/test2/test2.conf;" perl [% software.app.pl %] [% datasource.path %] > [% apply-software.out %] 2>[% apply-software.err %]
+cat-check-output.: cd [% cat-check-output %];  "source /lustre/scratch110/sanger/sd11/pipelines/pipelite/test2/test2.conf;" cat [% jobs.check-output.output1 %] > [% cat-check-output.cat.txt %] 2>[% cat-check-output.err %]
+check-datasource.once: cd [% check-datasource %];  "source /lustre/scratch110/sanger/sd11/pipelines/pipelite/test2/test2.conf;" wc -l [% jobs.datasource.path %] 2>[% check-datasource.err %]
+check-output.: cd [% check-output %];  "source /lustre/scratch110/sanger/sd11/pipelines/pipelite/test2/test2.conf;" perl -MPath::Tiny -e '$str = "hi"; path("hi.txt")->spew($str);' 2>[% check-output.err %]
+check-output.output: hi.txt hi.1.txt
+echo-sum-words.once: cd [% echo-sum-words %];  "source /lustre/scratch110/sanger/sd11/pipelines/pipelite/test2/test2.conf;" echo [% sum-words.count.txt %] > [% echo-sum-words.sumwords.txt %] 2>[% echo-sum-words.err %]
+grep-stuff.: cd [% grep-stuff %];  "source /lustre/scratch110/sanger/sd11/pipelines/pipelite/test2/test2.conf;" egrep "the" [% datasource.path %] > [% grep-stuff.grep.txt %] 2>[% grep-stuff.err %]
+grep-stuff.mem: 500
+grep-stuff.queue: normal
+sum-words.once: cd [% sum-words %];  "source /lustre/scratch110/sanger/sd11/pipelines/pipelite/test2/test2.conf;" perl -MList::AllUtils=sum -e 'print sum(@ARGV);' [% jobs.wordcount.wc.txt  %] > [% sum-words.count.txt %] 2>[% sum-words.err %]
+wordcount.: cd [% wordcount %];  "source /lustre/scratch110/sanger/sd11/pipelines/pipelite/test2/test2.conf;" wc -l [% grep-stuff.grep.txt %] > [% wordcount.wc.txt %] 2>[% wordcount.err %]
+wordcount.mem: 1000

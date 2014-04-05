@@ -1,0 +1,7 @@
+infile	type
+/lustre/scratch110/sanger/sd11/brca_rnaseq/PD3851a.BRCA2.bam	case
+/lustre/scratch110/sanger/sd11/brca_rnaseq/PD4120a.BRCA2.bam	case
+/lustre/scratch110/sanger/sd11/brca_rnaseq/PD4103a.BRCA2.bam	case
+/lustre/scratch110/sanger/sd11/brca_rnaseq/organoid2.BRCA2.bam	control
+/lustre/scratch110/sanger/sd11/brca_rnaseq/organoid3.BRCA2.bam	control
+/lustre/scratch110/sanger/sd11/brca_rnaseq/organoid5.BRCA2.bam	control

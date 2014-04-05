@@ -1,0 +1,7 @@
+#!/usr/bin/env perl
+use App::Pipeline::Lite4::Packer;
+
+my $pack = App::Pipeline::Lite4::Packer->new;
+
+$pack->fatpack_plite($ARGV[0]);
+
