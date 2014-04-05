@@ -1,0 +1,6 @@
+bin/make_test_data.pl
+fatlib
+td/test-pipeline-1/output
+td/test-pipeline-2/output
+td/test-pipeline-3
+td/test-pipeline-4

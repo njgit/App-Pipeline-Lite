@@ -1,4 +1,4 @@
-App-Pipeline-Lite
+Pipelite (App-Pipeline-Lite)
 =================
 
 Experimental Pipeline System.
