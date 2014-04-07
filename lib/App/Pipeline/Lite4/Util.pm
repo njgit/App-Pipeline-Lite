@@ -2,7 +2,10 @@ use strict;
 use warnings;
 package App::Pipeline::Lite4::Util ;
 use Moo;
- 
+use Term::UI;
+use Term::ReadLine; 
+use Path::Tiny;
+use Time::Piece;
 extends 'App::Pipeline::Lite4::Base';
  
 use Ouch;
@@ -31,6 +34,42 @@ sub set_editor  {
     $self->system_config->write($self->system_config_file);
     $self->system_logger->log( "info", "Set $editor as default editor");
 }
+
+sub ask_for_description {
+  #( Num $run_num ) {
+  my $self = shift;  
+  my $term = Term::ReadLine->new('describe-run');
+    
+  my $print_me = <<PRINTME;
+     
+     *************
+      Description
+     -------------    
+PRINTME
+    
+    my $bool = $term->ask_yn(
+            prompt => "Do you want to describe this run?"            
+            );
+          
+   if($bool) {
+     my $desc = $term->get_reply(
+            print_me => $print_me,
+            prompt => "Enter description: ",
+     ); 
+   }  
+}
+
+sub append_description {
+  my $self         = shift;  
+  my $run_info     = shift // "";
+  my $message      = shift // "";
+  my $append_file  = $self->pipeline_submission_file;
+  my $t = localtime;
+  my $run_desc = join "\t", $t->strftime, $run_info, $message;
+  $run_desc .= "\n";
+  my $path = path($append_file)->append($run_desc); 
+}
+
 
 sub uniq {
   my %seen;

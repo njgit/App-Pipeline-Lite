@@ -22,6 +22,7 @@ sub do_fatpack {
  
     my @modules = split /\r?\n/, $packer->trace(args => [$file]); #, use => $self->required_modules);
     @modules = grep { !/main.pm/ } @modules;
+    @modules = grep { !/XS.pm/ } @modules;
     print join "\n", @modules, "\n"; 
     my @packlists = $packer->packlists_containing(\@modules);
     $packer->packlists_to_tree(Path::Tiny->new('fatlib')->absolute, \@packlists);

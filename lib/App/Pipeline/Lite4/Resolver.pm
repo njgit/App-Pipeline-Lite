@@ -571,6 +571,7 @@ sub _generate_file_output_location {
 =method _run_number 
    Provides the last run number by looking at previous run directory numbers
 =cut
+## THIS IS IN BASE NOW - REMOVE
 sub _last_run_number {
     my $self=shift;
     #read in files in data directory
