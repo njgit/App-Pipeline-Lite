@@ -15,6 +15,8 @@ use App::Pipeline::Lite4::Command::viewgraph;
 use App::Pipeline::Lite4::Command::viewsystemconfig;
 use App::Pipeline::Lite4::Command::new;
 use App::Pipeline::Lite4::Command::run;
+use App::Pipeline::Lite4::Command::file;
+use App::Pipeline::Lite4::Command::symlink;
 
 sub setup {
      my $c = shift;
@@ -28,8 +30,9 @@ sub setup {
          vsc => "view system config",
          #vl => "view log",
          #ve => "view error",
-         run => "run pipeline"
-
+         run => "run pipeline",
+         file => "get files",
+         symlink => "symlink files"
          } );
 }
 
@@ -130,20 +133,33 @@ sub run {
 }
 
 sub file {
-     
+     my $c = shift;
+     my $desc = 'file (get pipeline output files) [OPTIONS] PIPELINE';
+     my %options = (
+     'run_num|r=i'  => 'run_num',
+     'stats|s'      => 'Show stats (size and mtime)',
+     'step_name|t'     => 'Show step name in header',
+     );
+     return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;       
+     $c->getopt( keys %options );   
+     App::Pipeline::Lite4::Command::file->new->execute($c->options, $c->argv);
 }
 
-# sub symdir {
-   # my $c = shift;
-     # my $desc = 'symdir (creates dir of symlinks) [OPTIONS] PIPELINE';
-     # my %options = (
-         # 'datasource|d=s' => 'Provides a path name to a datasource.',
-         # 'id_field|f=s'   => 'Field in the datasource that will be the fileprefix',
-         # );  
-     # $c->getopt( keys %options );
-     # return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;
-     # App::Pipeline::Lite4::Command::symdir->new->execute($c->options, $c->argv);
-# }
+sub symlink {
+    my $c = shift;
+    my $desc = 'symdir (creates dir of symlinks) [OPTIONS] PIPELINE';
+    my %options = (
+           #'datasource|d=s' => 'Provides a path name to a datasource.',
+           'run_num|r=i'  => 'run_num',
+          'id_field|f=s'   => 'Field in the datasource that will be the fileprefix',
+          'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME',
+          'path|p=s' => 'Path of directory, which will be created if it does not exist',
+          'name|n=s' => 'This is the prefixed name that is required, it will replace the referenced filename'
+          );  
+      $c->getopt( keys %options );
+      return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;
+      App::Pipeline::Lite4::Command::symlink->new->execute($c->options, $c->argv);
+}
 
 sub _options_str {
     my $options = shift;

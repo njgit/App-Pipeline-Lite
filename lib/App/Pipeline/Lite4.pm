@@ -68,8 +68,13 @@ sub run_pipeline {
                                          
     $grapher->add_dependents(  $self->pipeline_resolved_file, 
                                $self->pipeline_graph_file );                
-
+     
+    # copy stuff over to settings directory
+    my $run_num = $resolver->current_run_num;
+    $self->copy_pipeline_files_to_run_settings_dir($run_num); 
+     
     if ( ! $self->smoke_test ) { 
+   
       if( defined( $self->external_dispatcher ) ) {       
          $self->external_dispatch( $self->external_dispatcher );            
       } else {
@@ -85,9 +90,7 @@ sub run_pipeline {
      $self->logger->debug("Smoke Test!");    
    }
    
-   # copy stuff over to settings directory
-   my $run_num = $resolver->current_run_num;
-   $self->copy_pipeline_files_to_run_settings_dir($run_num);
+
 }
 
 sub external_dispatch {

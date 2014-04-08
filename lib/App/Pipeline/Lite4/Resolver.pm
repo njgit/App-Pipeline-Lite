@@ -165,7 +165,7 @@ sub _resolve {
          $self->logger->log("debug", "=== Job $row  ==="); 
          $self->_add_data_source_to_placeholder_hash( $row);
           #add input file directory to placeholder hash
-         ##$self->_add_input_files_to_placeholder_hash;
+         $self->_add_input_files_to_placeholder_hash;
          #add software to placeholder hash
          $self->_add_software_to_placeholder_hash;
          # add globals to placeholder hash      
@@ -182,9 +182,7 @@ sub _resolve {
          $self->_add_expected_output_files_to_placeholder_hash( $row);
          $self->_add_expected_output_files_to_jobs_in_placeholder_hash;
       #   warn Dumper $self->placeholder_hash;
-         
-         
-         
+
          # validate placeholders against placeholder hash
          $self->_validate_placeholder_hash_with_placeholders;
          # interpolate the cmds in each step and add to new resolved_step_struct
@@ -241,6 +239,30 @@ sub _add_software_to_placeholder_hash {
     
 }
 
+
+sub _add_input_files_to_placeholder_hash {
+   my $self = shift;  
+   # read folder called input add to the placeholder hash
+   # can add folders to input directory and it will pick the names  
+   return unless defined $self->input_dir; 
+   my $dir = $self->input_dir;
+   return unless $dir->stat;
+   
+   ouch 'App_Pipeline_Lite4_ERROR', "The input directory $dir does not exist" unless $dir->stat;
+   
+   my @files;
+
+   my $iter = $dir->iterator( { recurse => 1 } );  
+   while( my $path = $iter->() ){        
+        next unless $path->is_file;
+        push( @files, $path);
+   }
+    #add to placeholder;   
+    for my $i (0 .. $#files) {
+       $self->_placeholder_hash_add_item( "input.".$files[$i]->basename,  
+                                           $files[$i]->stringify );
+    }
+}
 
 # placeholder hash is where we have {step0}{file1} = value
 sub _placeholder_hash_add_item{

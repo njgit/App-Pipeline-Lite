@@ -9,6 +9,7 @@ use Config::Tiny;
 use Ouch;
 use File::HomeDir; 
 use App::Pipeline::Lite4::Logger; 
+use List::Util qw(max);
 
 has pipeline_dir  => ( isa => Path,  is => 'rw', coerce => 1, trigger  => \&_pipeline_dir_trigger);
 has use_relative_paths  => (isa => 'Bool', is => 'rw', default => sub {0});
@@ -44,7 +45,9 @@ has pipeline_preparse_file => (isa => Path, is => 'rw', coerce => 1, lazy_build 
 has pipeline_parse_file => (isa => Path, is => 'rw', coerce => 1, lazy_build => 1 ); 
 has pipeline_resolved_file => (isa => Path, is => 'rw', coerce => 1, lazy_build => 1 ); 
 has pipeline_graph_file => (isa => Path, is => 'rw', coerce => 1, lazy_build => 1 );
+has pipeline_submission_file => (isa => Path, is => 'rw', coerce => 1, lazy_build => 1 );
 
+has symlink_dir => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build => 1 );
 has output_run_name => (  isa => 'Str', is => 'rw', default => sub {return 'run'} );
 has output_job_name => (  isa => 'Str', is => 'rw', default => sub {return 'job'} );
 has run_settings_name => ( isa => 'Str', is => 'rw', default => sub {return 'settings'});
@@ -95,6 +98,11 @@ sub _build_pipeline_resolved_file {
 sub _build_pipeline_graph_file {
     my $self = shift;
     return path( $self->pipeline_dir, $self->pipeline_name . '.graph.yaml') ; 
+}
+
+sub _build_pipeline_submission_file {
+    my $self = shift;
+    return path( $self->pipeline_dir, $self->pipeline_name . '.submissions.txt') ; 
 }
 
 sub _build_logfile {
@@ -205,6 +213,15 @@ sub _build_input_dir {
     return path( $self->pipeline_dir, 'input'  ); 
 }
 
+
+sub _build_symlink_dir {
+    my $self = shift;
+    my $symlink_dir = $self->config->{_}->{symlink_dir}; 
+    return path($symlink_dir) if(defined( $symlink_dir)) ;
+    return path( $self->pipeline_dir, 'symlink'  ); 
+}
+
+
 sub _build_software_dir {
     my $self = shift;
     my $software_dir = $self->config->{_}->{software_dir}; 
@@ -247,6 +264,16 @@ sub run_settings_dir   {
    }
 }
 
+sub last_run_num {
+    my $self=shift;
+    #read in files in data directory
+    #order by run number
+    # - if none then run number is 1.
+    my $run_num = max map { if( $_ =~ /run([0-9]+)/){$1}else{} } $self->output_dir->children;
+    $run_num = 0 unless (defined $run_num);    
+    return $run_num;   
+}
+
 sub new_run_settings_dir { 
    my $self = shift;
    #(Num $run_num){
@@ -261,8 +288,16 @@ sub new_run_settings_dir {
    }else{
       return path($settings_dir, 1);
    }  
-   
 }
+
+sub datasource_from_run {
+    my $self = shift;
+    my $run_num = shift;
+    my $settings_path = $self->run_settings_dir($run_num);   
+    my $datasource_path = path($settings_path, $self->datasource_file->basename );
+    return $datasource_path;
+}
+
 
 
 

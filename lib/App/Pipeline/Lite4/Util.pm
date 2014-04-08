@@ -65,7 +65,7 @@ sub append_description {
   my $message      = shift // "";
   my $append_file  = $self->pipeline_submission_file;
   my $t = localtime;
-  my $run_desc = join "\t", $t->strftime, $run_info, $message;
+  my $run_desc = join "\t", $t->datetime, $run_info, $message;
   $run_desc .= "\n";
   my $path = path($append_file)->append($run_desc); 
 }
