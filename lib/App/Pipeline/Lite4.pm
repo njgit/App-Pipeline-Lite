@@ -115,7 +115,7 @@ sub copy_pipeline_files_to_run_settings_dir  {
    
    my $self = shift;
    my $run_num = shift;
-   $self->new_run_settings_dir($run_num)->mkpath unless $self->run_settings_dir($run_num)->exists;  
+   $self->new_run_settings_dir($run_num)->mkpath unless $self->new_run_settings_dir($run_num)->exists;  
    
    copy( $self->pipeline_file->stringify , $self->run_settings_dir($run_num)->stringify )
      or ouch 'App_Pipeline_Lite4_Error', "Couldn't copy pipeline file to run settings directory";

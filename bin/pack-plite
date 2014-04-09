@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+#Use: perl -I lib bin/pack-plite bin
 use App::Pipeline::Lite4::Packer;
 
 my $pack = App::Pipeline::Lite4::Packer->new;

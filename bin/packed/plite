@@ -123,7 +123,7 @@ $fatpacked{"App/Pipeline/Lite4.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
      
      my $self = shift;
      my $run_num = shift;
-     $self->new_run_settings_dir($run_num)->mkpath unless $self->run_settings_dir($run_num)->exists;  
+     $self->new_run_settings_dir($run_num)->mkpath unless $self->new_run_settings_dir($run_num)->exists;  
      
      copy( $self->pipeline_file->stringify , $self->run_settings_dir($run_num)->stringify )
        or ouch 'App_Pipeline_Lite4_Error', "Couldn't copy pipeline file to run settings directory";
@@ -626,7 +626,7 @@ $fatpacked{"App/Pipeline/Lite4/Command/run.pm"} = '#line '.(1+__LINE__).' "'.__F
       
       eval {
           my $App_Pipeline_Lite = App::Pipeline::Lite4->new( pipeline_dir => $args->[0]);
-          $App_Pipeline_Lite->datasource_file( $opt->{datasource}) if defined($opt->{datasource});   
+           
           $App_Pipeline_Lite->smoke_test(1) if defined($opt->{smoke_test});    
           
           if( defined $opt->{steps} ) {
@@ -640,13 +640,15 @@ $fatpacked{"App/Pipeline/Lite4/Command/run.pm"} = '#line '.(1+__LINE__).' "'.__F
           if(defined $opt->{run}){
                  
            $App_Pipeline_Lite->run_num($opt->{run});
-          # set datasource from previous run_num?
-          # $App_Pipeline_Lite->datasource_file
-          # or do we set the $App_Pipeline_Lite->datasource_resolve_file
-          # do we need a switch to say this is the resolved file 
-          # and don't do any further datasource resolving?
+           my $datasource_path = $App_Pipeline_Lite->datasource_from_run($opt->{run});
+           $App_Pipeline_Lite->datasource_file($datasource_path);
+           
+           # $App_Pipeline_Lite->datasource_file
+           # or do we set the $App_Pipeline_Lite->datasource_resolve_file
+           # do we need a switch to say this is the resolved file 
+           # and don't do any further datasource resolving?
         }
-        
+        $App_Pipeline_Lite->datasource_file( $opt->{datasource}) if defined($opt->{datasource});  
         my $desc ="smoke-test";  
         $desc = $App_Pipeline_Lite->util->ask_for_description
                         unless defined $opt->{smoke_test};
