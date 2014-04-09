@@ -1,6 +1,0 @@
-cufflinks. cufflinks -g /lustre/scratch110/sanger/sd11/Documents/GenomeFiles/human/gene_sets/Homo_sapiens.hg19.nochr.gtf -p 4 -o [% cufflinks. %] [% datasource.infile %]
-cufflinks.mem 15000
-assemble.once echo "[% jobs.cufflinks.transcripts.gtf %]" | sed -e 's/\s\+/\n/g' > [% assemble.assemblies.txt %]
-cuffmerge.once cuffmerge -g /lustre/scratch110/sanger/sd11/Documents/GenomeFiles/human/gene_sets/Homo_sapiens.hg19.nochr.gtf -s /lustre/scratch110/sanger/sd11/Documents/GenomeFiles/human/ref_genomes/hs37d5.fa -o [% cuffmerge. %] [% assemble.assemblies.txt %]
-
-something-else. echo [% assemble.assemblies.txt %] > [% something-else.assemblies.txt %]
