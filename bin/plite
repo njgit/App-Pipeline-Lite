@@ -150,9 +150,9 @@ sub symlink {
     my $desc = 'symdir (creates dir of symlinks) [OPTIONS] PIPELINE';
     my %options = (
            #'datasource|d=s' => 'Provides a path name to a datasource.',
-           'run_num|r=i'  => 'run_num',
+          'run_num|r=i'  => 'run_num',
           'id_field|f=s'   => 'Field in the datasource that will be the fileprefix',
-          'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME',
+          'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME (required)',
           'path|p=s' => 'Path of directory, which will be created if it does not exist',
           'name|n=s' => 'This is the prefixed name that is required, it will replace the referenced filename'
           );  

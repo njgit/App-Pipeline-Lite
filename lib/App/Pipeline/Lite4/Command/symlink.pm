@@ -15,10 +15,14 @@ sub execute {
         my $id_field = $opt->{id_field};
         my $pipeline_dir =       path($args->[0]);
         my $App_Pipeline_Lite = App::Pipeline::Lite4->new( pipeline_dir => $args->[0]);
+        ouch 'App_Pipeline_Lite_CMD_ERROR', "Requires step_and_filename argument"
+           unless ( defined( $opt->{step_and_fname} ) );
         my ($step,$filename) = split '#', $opt->{step_and_fname} ;
         
-        ouch 'App_Pipeline_Lite_CMD_ERROR', "Something went wrong specifying the step and filename" unless ( defined($step) and defined($filename));
-        ouch 'App_Pipeline_Lite_CMD_ERROR', "Something went wrong specifying the step and filename" if( $step eq '' or $filename eq '');
+        ouch 'App_Pipeline_Lite_CMD_ERROR', "Something went wrong specifying the step and filename" 
+           unless ( defined($step) and defined($filename));
+        ouch 'App_Pipeline_Lite_CMD_ERROR', "Something went wrong specifying the step and filename" 
+           if( $step eq '' or $filename eq '');
         
         # get the datasource  
         my $resolver = App::Pipeline::Lite4::Resolver->new( pipeline_dir =>  $args->[0]); 
@@ -82,7 +86,9 @@ sub execute {
     
      if( kiss 'App_Pipeline_Lite4_Error') {
        print bleep(), "\n"; 
-     } elsif ( hug ) {
+     } elsif ( kiss  'App_Pipeline_Lite_CMD_ERROR') {
+       print bleep(), "\n";       
+     }elsif ( hug ) {
        print 'An error occurred, check logs: ', $@ ;
      }
 }
