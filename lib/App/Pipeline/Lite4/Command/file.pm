@@ -96,7 +96,7 @@ sub execute {
        }
        
       my $t = Data::Table->new(\@table_data, $header, 0);
-      $datasource->colMerge($t);
+      $datasource->colMerge($t, {renameCol => 1 } );
       print $datasource->tsv;
        
     };
