@@ -3,6 +3,7 @@ use warnings;
 package App::Pipeline::Lite4::Command::run;
 use Moo;
 use Ouch;
+use Path::Tiny;
 use App::Pipeline::Lite4;
 sub execute {
     my ($self, $opt, $args) = @_;
@@ -31,10 +32,17 @@ sub execute {
          # or do we set the $App_Pipeline_Lite->datasource_resolve_file
          # do we need a switch to say this is the resolved file 
          # and don't do any further datasource resolving?
-      }
-      $App_Pipeline_Lite->datasource_file( $opt->{datasource}) if defined($opt->{datasource});  
-      my $desc ="smoke-test";  
-      $desc = $App_Pipeline_Lite->util->ask_for_description
+        }
+        
+        if( defined $opt->{datasource} ) {
+           # pre check that file exists
+           my $datasource_path = $opt->{datasource}; 
+           ouch 'App_Pipeline_Lite4_Error', "The datasource path ($datasource) is not a file" unless path( $datasource)->is_file          
+           $App_Pipeline_Lite->datasource_file( $datasource_path )         
+        }  
+       
+        my $desc ="smoke-test";  
+       $desc = $App_Pipeline_Lite->util->ask_for_description
                       unless defined $opt->{smoke_test};
       my $step_filter = $opt->{steps} // "*";
       my $job_filter  = $opt->{jobs} // "*"; 
