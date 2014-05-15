@@ -558,7 +558,7 @@ $fatpacked{"App/Pipeline/Lite4/Command/file.pm"} = '#line '.(1+__LINE__).' "'.__
          }
          
         my $t = Data::Table->new(\@table_data, $header, 0);
-        $datasource->colMerge($t);
+        $datasource->colMerge($t, {renameCol => 1 } );
         print $datasource->tsv;
          
       };
