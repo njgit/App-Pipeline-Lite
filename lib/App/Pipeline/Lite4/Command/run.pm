@@ -37,8 +37,8 @@ sub execute {
         if( defined $opt->{datasource} ) {
            # pre check that file exists
            my $datasource_path = $opt->{datasource}; 
-           ouch 'App_Pipeline_Lite4_Error', "The datasource path ($datasource) is not a file" unless path( $datasource)->is_file          
-           $App_Pipeline_Lite->datasource_file( $datasource_path )         
+           ouch 'App_Pipeline_Lite4_Error', "The datasource path ($datasource_path) is not a file" unless path( $datasource_path)->is_file ;         
+           $App_Pipeline_Lite->datasource_file( $datasource_path )  ;       
         }  
        
         my $desc ="smoke-test";  

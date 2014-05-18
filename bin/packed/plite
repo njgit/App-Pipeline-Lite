@@ -619,6 +619,7 @@ $fatpacked{"App/Pipeline/Lite4/Command/run.pm"} = '#line '.(1+__LINE__).' "'.__F
   package App::Pipeline::Lite4::Command::run;
   use Moo;
   use Ouch;
+  use Path::Tiny;
   use App::Pipeline::Lite4;
   sub execute {
       my ($self, $opt, $args) = @_;
@@ -647,10 +648,17 @@ $fatpacked{"App/Pipeline/Lite4/Command/run.pm"} = '#line '.(1+__LINE__).' "'.__F
            # or do we set the $App_Pipeline_Lite->datasource_resolve_file
            # do we need a switch to say this is the resolved file 
            # and don't do any further datasource resolving?
-        }
-        $App_Pipeline_Lite->datasource_file( $opt->{datasource}) if defined($opt->{datasource});  
-        my $desc ="smoke-test";  
-        $desc = $App_Pipeline_Lite->util->ask_for_description
+          }
+          
+          if( defined $opt->{datasource} ) {
+             # pre check that file exists
+             my $datasource_path = $opt->{datasource}; 
+             ouch 'App_Pipeline_Lite4_Error', "The datasource path ($datasource_path) is not a file" unless path( $datasource_path)->is_file ;         
+             $App_Pipeline_Lite->datasource_file( $datasource_path )  ;       
+          }  
+         
+          my $desc ="smoke-test";  
+         $desc = $App_Pipeline_Lite->util->ask_for_description
                         unless defined $opt->{smoke_test};
         my $step_filter = $opt->{steps} // "*";
         my $job_filter  = $opt->{jobs} // "*"; 
@@ -46335,14 +46343,14 @@ sub file {
 
 sub symlink {
     my $c = shift;
-    my $desc = 'symdir (creates dir of symlinks) [OPTIONS] PIPELINE';
+    my $desc = 'symlink (creates dir of symlinks) [OPTIONS] PIPELINE';
     my %options = (
            #'datasource|d=s' => 'Provides a path name to a datasource.',
           'run_num|r=i'  => 'run_num',
-          'id_field|f=s'   => 'Field in the datasource that will be the fileprefix',
+          'id_field|f=s'   => 'Field in the datasource that will be the file prefix',
           'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME (required)',
           'path|p=s' => 'Path of directory, which will be created if it does not exist',
-          'name|n=s' => 'This is the prefixed name that is required, it will replace the referenced filename'
+          'name|n=s' => 'Replaces filename with new name'
           );  
       $c->getopt( keys %options );
       return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;
