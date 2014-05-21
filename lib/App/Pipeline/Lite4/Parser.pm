@@ -175,13 +175,14 @@ sub parse_pipeline_to_step_hash   {
        my $F = qr{^[\w\-]+\.mem};       
        my $G = qr{^[\w\-]+\.after};
        my $H = qr{^[\w\-]+\.queue};
+       my $I = qr{^[\w\-]+\.cores};
 
        # #my $G = qr{^[0-9]+\.skip_if_exists}
        # #my $E = qr{^[0-9]+\.no_err};
        
-       my $I = qr{\s(.+)};
+       my $J = qr{\s(.+)};
        my $rg = qr{        
-           ($C|$D|$E|$F|$G|$H)$I      
+           ($C|$D|$E|$F|$G|$H|$I)$J      
        }x;
        
         if( $line =~ $rg) {          
@@ -231,6 +232,10 @@ sub pipeline_step_hash_to_step_struct {
            
            elsif ( $step_condition eq 'queue' ) { 
              $step_struct{$step_name}->{queue} =trim( $step_hash->{$step} );
+           }
+           
+           elsif ( $step_condition eq 'cores' ) { 
+             $step_struct{$step_name}->{cores} =trim( $step_hash->{$step} );
            }
            
            # get placeholders
