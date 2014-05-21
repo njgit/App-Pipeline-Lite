@@ -233,7 +233,7 @@ sub _add_software_to_placeholder_hash {
     # we then need to add the software in in the software.ini file
     return unless defined $self->software_ini;
     return unless $self->software_ini_file->exists;
-    foreach my $software_name ( keys @{ $self->software_ini->{_} }  ) {
+    foreach my $software_name ( keys %{ $self->software_ini->{_} }  ) {
         $self->_placeholder_hash_add_item(  "software.$software_name", $self->software_ini->{_}->{$software_name} );
     }
     
