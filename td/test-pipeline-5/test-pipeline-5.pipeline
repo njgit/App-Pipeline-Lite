@@ -1,0 +1,10 @@
+#Do something on the books files
+grep-stuff. egrep "the" [% datasource.path %] > [% grep-stuff.grep.txt %]
+grep-stuff.output hi.txt
+#Group by type
+combine.groupby.type cat [% grep-stuff.grep.txt %] > [% combine.combine.txt %]
+
+combineA.groupby.type.kind cat [% grep-stuff.grep.txt %] > [% combineA.combine.txt %]
+combineA.output out.txt
+# groupby and transpose
+# combineA.grouptransby.type.kind. cat [% grep-stuff.grep.txt1 %] [% grep-stuff.grep.txt2 %] > [% combineA.combine.txt %]

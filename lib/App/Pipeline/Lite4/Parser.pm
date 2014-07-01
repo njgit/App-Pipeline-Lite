@@ -30,7 +30,7 @@ sub get_step_condition {
     my $str = shift;
    #TYPE: :$str 
   
-   my ($condition) = $str =~ /^[\w\-]+\.(.+)/;
+   my ($condition) = $str =~ /^[\w\-]+\.([\w\-]+)\.*/;
    return $condition;
 }
 
@@ -176,13 +176,17 @@ sub parse_pipeline_to_step_hash   {
        my $G = qr{^[\w\-]+\.after};
        my $H = qr{^[\w\-]+\.queue};
        my $I = qr{^[\w\-]+\.cores};
+       my $J = qr{^[\w\-]+\.groupby\.[\w\-]+};
+       my $K = qr{^[\w\-]+\.groupby\.[\w\-]+\.[\w\-]+};
+       #my $L = qr{^[\w\-]+\.grouptransby\.[\w\-]};
+       #my $M = qr{^[\w\-]+\.grouptransby\.[\w\-]\.[\w\-]};
 
        # #my $G = qr{^[0-9]+\.skip_if_exists}
        # #my $E = qr{^[0-9]+\.no_err};
        
-       my $J = qr{\s(.+)};
+       my $N = qr{\s(.+)};
        my $rg = qr{        
-           ($C|$D|$E|$F|$G|$H|$I)$J      
+           ($C|$D|$E|$F|$G|$H|$I|$J|$K)$N      
        }x;
        
         if( $line =~ $rg) {          
@@ -205,7 +209,7 @@ sub pipeline_step_hash_to_step_struct {
             
            my $step_name = get_step_name( $step);
            my $step_condition = get_step_condition( $step);
-              
+           
            if( !defined($step_condition) ) {
              $step_struct{$step_name}->{cmd} = $step_hash->{$step};
              $step_struct{$step_name}->{condition} = undef; # change to 'none'?
@@ -240,7 +244,7 @@ sub pipeline_step_hash_to_step_struct {
            
            # get placeholders
            if( ! exists( $step_struct{$step_name}->{placeholders} ) ){$step_struct{$step_name}->{placeholders} = undef;}#initialise to undef
-           if( ( ! defined $step_condition) or ($step_condition eq 'once') or ($step_condition eq 'output')  ){
+           if( ( ! defined $step_condition) or ($step_condition eq 'once') or ($step_condition eq 'output') or ($step_condition eq 'groupby') ){
              #my (@placeholders) = ( $step_hash->{$step} =~ /\[\%\s+([a-z0-9\.]+)\s\%\]/g );
              my (@placeholders) = ( $step_hash->{$step} =~ /\[\%\s+([\w\-\.]+)\s+\%\]/g ); #\w is alphanumeric plus _, added more spaces at end. Consider /\[\%\s+([a-z0-9_][\w\.]+)\s+\%\]/g enforcing lower case start.
              if ( @placeholders >= 1){ 
