@@ -174,7 +174,6 @@ sub _resolve {
          ##$self->_add_dir_to_placeholder_hash ( dir_name => 'data', dir_path => dir( $self->output_dir->parent ) );
          
          # add in the output files expected for each step to the placeholder hash       
-
          $self->_add_steps_in_step_struct_to_placeholder_hash($row);
          $self->_create_directory_structure_from_placeholder_hash;         
          
