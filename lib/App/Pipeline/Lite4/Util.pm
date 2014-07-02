@@ -6,6 +6,7 @@ use Term::UI;
 use Term::ReadLine; 
 use Path::Tiny;
 use Time::Piece;
+use Data::Dumper;
 extends 'App::Pipeline::Lite4::Base';
  
 use Ouch;
@@ -70,11 +71,63 @@ sub append_description {
   my $path = path($append_file)->append($run_desc); 
 }
 
-
 sub uniq {
   my %seen;
   return grep { !$seen{$_}++ } @_;
 }
 
- 
+sub datasource_groupby {
+  my $self = shift;
+  my $datasource_table  =shift;
+  my $groupby_field = shift;
+  my %group_hash; 
+  # create hash
+  my $next = $datasource_table->iterator();
+  my $i = 0;
+  while( my $row = $next->() ){ 
+    #warn Dumper $row;   
+    push( @{ $group_hash{ $row->{$groupby_field} } }, $i );  
+    $i++;
+  }
+  return \%group_hash; 
+}
+#the idea is to only offer a groupby one attribute, if more than one
+#is required then the datasource should be given an extra column and
+# the two column mergedin to a specific column
+# the exception is for grouptransby which will work with two columns in general I think.
+# for testing purposes we have this here.
+sub datasource_groupby2 {
+  my $self = shift;
+  my $datasource_table  =shift;
+  my $groupby_field1 = shift;
+  my $groupby_field2 = shift;
+  my %group_hash; 
+  # create hash
+  my $next = $datasource_table->iterator();
+  my $i = 0;
+  while( my $row = $next->() ){ 
+    #warn Dumper $row;
+    
+    if( defined($groupby_field1) and defined( $groupby_field2 )){    
+        push( @{ $group_hash{$row->{$groupby_field1} .'-' . $row->{$groupby_field2} } } , $i );  
+    }elsif( defined($groupby_field1 ) ){
+        push( @{ $group_hash{ $row->{$groupby_field1} } }, $i );   
+    }else{
+        ouch "App_Pipeline_Lite4_Error","No groupby fields to group by";
+    }
+      
+    $i++;
+  }
+  return \%group_hash; 
+}
+
+sub datasource_groupby2_num_groups {
+  my $self = shift;
+  my @args = @_;
+  #warn "DATASOURC ARGS ," , Dumper @args;
+  my $groupby_hash = $self->datasource_groupby2(@args);
+  return scalar keys %$groupby_hash;  
+}
+
+
 1;

@@ -80,8 +80,7 @@ sub execute {
         # check that the field exists
         # go through each job directory and make the link
         # if a file doesn't exist warn. 
-        # make a datasource for the symlink files
-            
+        # make a datasource for the symlink files            
      };
     
      if( kiss 'App_Pipeline_Lite4_Error') {

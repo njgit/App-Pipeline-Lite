@@ -241,6 +241,13 @@ sub pipeline_step_hash_to_step_struct {
            elsif ( $step_condition eq 'cores' ) { 
              $step_struct{$step_name}->{cores} =trim( $step_hash->{$step} );
            }
+           elsif( $step_condition eq 'groupby' ) {         
+             my @condition_params = split( /\./,$step);            
+             $step_struct{$step_name}->{cmd} = $step_hash->{$step};
+             $step_struct{$step_name}->{condition} = $step_condition;
+             my @params = @condition_params[2 .. $#condition_params];
+             $step_struct{$step_name}->{condition_params} = \@params;
+           }
            
            # get placeholders
            if( ! exists( $step_struct{$step_name}->{placeholders} ) ){$step_struct{$step_name}->{placeholders} = undef;}#initialise to undef
