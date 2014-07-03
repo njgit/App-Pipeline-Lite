@@ -10,6 +10,7 @@ my $pipeline_dir = path( qw(td test-pipeline-5) );
 my $App_Pipeline_Lite_Grapher = App::Pipeline::Lite4::Grapher->new(
     pipeline_dir => $pipeline_dir,
     run_id => 30,
+    datasource_file => 'td/book.datasource',
 );
 
 my $yaml_in  =  $App_Pipeline_Lite_Grapher->pipeline_resolved_file;

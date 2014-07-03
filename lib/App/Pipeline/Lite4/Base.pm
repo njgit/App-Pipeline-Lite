@@ -8,6 +8,7 @@ use Types::Path::Tiny qw/Path AbsPath/;
 use Config::Tiny;
 use Ouch;
 use File::HomeDir; 
+use Data::Table;
 use App::Pipeline::Lite4::Logger; 
 use List::Util qw(max);
 
@@ -46,6 +47,7 @@ has pipeline_parse_file => (isa => Path, is => 'rw', coerce => 1, lazy_build => 
 has pipeline_resolved_file => (isa => Path, is => 'rw', coerce => 1, lazy_build => 1 ); 
 has pipeline_graph_file => (isa => Path, is => 'rw', coerce => 1, lazy_build => 1 );
 has pipeline_submission_file => (isa => Path, is => 'rw', coerce => 1, lazy_build => 1 );
+has pipeline_datasource  => ( isa => 'Data::Table', is => 'rw', lazy_build =>1 ); #used in util.
 
 has symlink_dir => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build => 1 );
 has output_run_name => (  isa => 'Str', is => 'rw', default => sub {return 'run'} );
@@ -103,6 +105,14 @@ sub _build_pipeline_graph_file {
 sub _build_pipeline_submission_file {
     my $self = shift;
     return path( $self->pipeline_dir, $self->pipeline_name . '.submissions.txt') ; 
+}
+
+sub _build_pipeline_datasource {
+    my $self = shift;
+    my $datasourcefile = path( $self->datasource_file )->absolute;    
+    ouch 'badfile', "Need to provide datasource file location\n" unless defined( $datasourcefile);
+    #my $t =  App::Pipeline::Lite2::Datasource->new( datasource_file => $datasourcefile );         
+    my $t = Data::Table::fromTSV( $datasourcefile->stringify );
 }
 
 sub _build_logfile {

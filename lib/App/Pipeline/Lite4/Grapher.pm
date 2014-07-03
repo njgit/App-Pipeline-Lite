@@ -9,6 +9,7 @@ use YAML::Any;
 #use List::AllUtils qw(min any); can't use as get kick ups about requiring versions > 1.32
 use List::Util qw(min reduce);
 use Data::Dumper;
+use App::Pipeline::Lite4::Util;
 extends 'App::Pipeline::Lite4::Base';
 has pipeline_step_struct_with_dependents => ( isa => 'HashRef', is => 'rw' );
 
@@ -73,12 +74,29 @@ sub _add_dependents_for_step_via_placeholder {
      $self->logger->debug( "Valid Steps: " . Dumper $valid_steps_hash );
      my $rgx1 = qr{^([\w\-]+)\.{0,1}};
      my $rgx2 = qr{^jobs\.([\w\-]+)\.{0,1}};      
+     my $rgx3 = qr{groupbyebyebye}; # should not match anything
+     if( defined( $step->{condition} ) ){         
+       if(  $step->{condition} eq 'groupby'){
+         my $params = $step->{condition_params};     
+         my $params_str = join '\.', @$params;
+         my $rgx3_str = '^groupby\.' . $params_str . '\.' . '([\w\-]+)\.{0,1}';
+         $rgx3 = qr{$rgx3_str};
+       }
+     } 
+     warn "REGEX3 $rgx3"; 
+     
+     
+     
      my $placeholders = $step->{placeholders};
-     my $dependents = $step->{dependents};
+     my $dependents   = $step->{dependents};
+     
      my @valid_steps = keys %$valid_steps_hash;
      foreach my $placeholder (@$placeholders){                                    
          my ($placeholder_step_name) = $placeholder =~ $rgx2;#/^(\w+)\.{0,1}/; # =~ /step([0-9]+)/;
+         ($placeholder_step_name) = $placeholder =~ $rgx3 unless defined($placeholder_step_name);
          ($placeholder_step_name) = $placeholder =~ $rgx1 unless defined($placeholder_step_name);
+          
+          warn "GOT STEP NAME: $placeholder_step_name from $placeholder";
          $self->logger->debug("step $step_name: placeholder step name - $placeholder_step_name (from $placeholder)");  
          next unless defined($placeholder_step_name);
          
@@ -107,16 +125,37 @@ sub _add_dependents_for_step_via_placeholder {
                  # the 'any' code above will skip adding the same dependent jobs if a placeholder with the same step name occurs multiple times. 
                  # it works because it sets $existing_dependents true if any of the job numbers is present                
                  #---
-                 
-                 # now a once condition referencing another step with a once condition only needs to put down the minimal job number
-                 if( defined $valid_steps_hash->{$placeholder_step_name} ){    # only defined condition is 'once' so far             
+                 if( $step->{condition} eq 'once'){ 
+                     # now a once condition referencing another step with a once condition only needs to put down the minimal job number
+                     if( defined $valid_steps_hash->{$placeholder_step_name} ){    # only defined condition is 'once' so far             
                     
-                     push(@$dependents, "$lowest_job_num.$placeholder_step_name") unless ( $this_step_name or $existing_dependents) ; 
-                 }else {
-                     for my $i ( $lowest_job_num .. ( $num_of_jobs -1 )){
-                      push(@$dependents, "$i.$placeholder_step_name") unless ( $this_step_name or $existing_dependents) ;                                               
+                         push(@$dependents, "$lowest_job_num.$placeholder_step_name") unless ( $this_step_name or $existing_dependents) ; 
+                     }else {
+                         for my $i ( $lowest_job_num .. ( $num_of_jobs -1 )){
+                            push(@$dependents, "$i.$placeholder_step_name") unless ( $this_step_name or $existing_dependents) ;                                               
+                         }
+                  
+                     }
                    }
-                 }
+                   if ( $step->{condition} eq 'groupby'  ){
+                       
+                       #we take the job number and get the group we need
+                       my $util = App::Pipeline::Lite4::Util->new;
+                       my $params = $step->{condition_params};
+                       warn "PARAMS: ", Dumper $params;
+                       my $groupby_hash = $util->datasource_groupby2( $self->pipeline_datasource, @$params );
+                       my @groupby_ids = sort keys %$groupby_hash;
+                       warn "GRAPHER JOBNUM: $job_num";
+                       warn "GRAPHER GROUPID: @groupby_ids";
+                       warn "gRAPHER CMD", $step->{cmd};
+                       warn "STEP",  Dumper $step;
+                       my $group_id = $groupby_ids[$job_num]; 
+                       warn "GRAPHER GROUPID: $group_id";
+                       my $job_ids = $groupby_hash->{$group_id};
+                       foreach my $job_id (@$job_ids){  
+                           push( @$dependents, "$job_id.$placeholder_step_name" ) unless ( $this_step_name or $existing_dependents) ;
+                       }
+                   } 
                  
              }else{                 
                  #$existing_dependents =  any { $_ eq "$job_num.$placeholder_step_name"  }  @$dependents;

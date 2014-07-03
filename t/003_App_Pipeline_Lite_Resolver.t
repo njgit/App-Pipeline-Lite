@@ -27,14 +27,14 @@ $parser->preparse(   $parser->pipeline_file,
 $parser->parse(  $parser->pipeline_preparse_file, 
                  $parser->pipeline_parse_file);
 #####################################################################################################
-
+my $pipeline_output_dir = path( $pipeline_dir, qw(output) );
 my $App_Pipeline_Lite_Resolver = App::Pipeline::Lite4::Resolver->new(
     pipeline_dir => $pipeline_dir,
     run_id => 1,
     once_condition_filter => 0,
     use_relative_paths => 1,
-    datasource_file => 'td/book.datasource'
-    #output_dir => $pipeline_output_dir
+    datasource_file => 'td/book.datasource',
+    output_dir => $pipeline_output_dir
 );
 $App_Pipeline_Lite_Resolver->_resolve;
 

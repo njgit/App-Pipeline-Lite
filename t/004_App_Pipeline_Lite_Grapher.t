@@ -24,9 +24,6 @@ $App_Pipeline_Lite_Grapher->add_dependents( $yaml_in,
 #warn Dumper $dependents_added_pipeline_yaml;
 ok(1);
 
-
-
-
 =cut
 my $graph = $grapher->create_dependency_graph1( 
            resolved_pipeline_file_yaml => $resolved_pipeline_file);

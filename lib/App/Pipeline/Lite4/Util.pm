@@ -129,5 +129,15 @@ sub datasource_groupby2_num_groups {
   return scalar keys %$groupby_hash;  
 }
 
+sub groupby_placeholder_regex_get_step {
+  my $self       = shift;
+  my $datasource = shift;
+  my $groupby_fields  = shift;
+
+  my $col_names = $datasource->{header};
+  my $col_names_rgx_str = join "|", @$col_names;               
+  my $groupby_placeholder_rgx_str = 'groupby\.('.$col_names_rgx_str . ')\.(' . $col_names_rgx_str . ')*\.*(.+)$';
+  
+}
 
 1;

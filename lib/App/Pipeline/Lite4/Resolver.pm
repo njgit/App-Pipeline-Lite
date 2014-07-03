@@ -30,13 +30,13 @@ has job_filter => ( isa  => 'ArrayRef|Undef', is =>'rw', lazy_build => 1 );
 has step_filter => ( isa => 'ArrayRef|Undef' , is => 'rw', lazy_build =>1 );
 
 
-sub _build_pipeline_datasource {
-    my $self = shift;
-    my $datasourcefile = path( $self->datasource_file )->absolute;    
-    ouch 'badfile', "Need to provide datasource file location\n" unless defined( $datasourcefile);
-    #my $t =  App::Pipeline::Lite2::Datasource->new( datasource_file => $datasourcefile );         
-    my $t = Data::Table::fromTSV( $datasourcefile->stringify );
-}
+#sub _build_pipeline_datasource {
+#    my $self = shift;
+#    my $datasourcefile = path( $self->datasource_file )->absolute;    
+#    ouch 'badfile', "Need to provide datasource file location\n" unless defined( $datasourcefile);
+#    #my $t =  App::Pipeline::Lite2::Datasource->new( datasource_file => $datasourcefile );         
+#    my $t = Data::Table::fromTSV( $datasourcefile->stringify );
+#}
 
 sub _build_pipeline_step_struct {
      my $self = shift;
@@ -403,7 +403,7 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                
                my $col_names = $self->pipeline_datasource->{header};
                my $col_names_rgx_str = join "|", @$col_names;               
-               my $groupby_placeholder_rgx_str = 'groupby\.('.$col_names_rgx_str . ')\.(' . $col_names_rgx_str . ')*=*\.*(.+)$';  
+               my $groupby_placeholder_rgx_str = 'groupby\.('.$col_names_rgx_str . ')\.(' . $col_names_rgx_str . ')*\.*(.+)$';  
                warn "PLACEHOLDER $placeholder";
                warn "PLACEHOLDER RGX:", $groupby_placeholder_rgx_str;
                $groupby_placeholder_rgx = qr/$groupby_placeholder_rgx_str/;
@@ -677,7 +677,7 @@ sub _groupby_condition_filter_on_resolved_step_struct {
           if ( $job->{$step}->{condition} eq 'groupby') {                
                 my $params = $job->{$step}->{condition_params};
                 my $num_grouped_jobs = $util->datasource_groupby2_num_groups($self->pipeline_datasource, @$params);
-                if( $job_num > $num_grouped_jobs){
+                if( $job_num >= $num_grouped_jobs){
                     $self->logger->debug("Deleting groupby step $step in $job_num");
                     delete $job->{$step};
                 }
