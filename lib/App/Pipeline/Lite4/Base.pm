@@ -109,7 +109,7 @@ sub _build_pipeline_submission_file {
 
 sub _build_pipeline_datasource {
     my $self = shift;
-    my $datasourcefile = path( $self->datasource_file )->absolute;    
+    my $datasourcefile = path( $self->datasource_file )->absolute;  
     ouch 'badfile', "Need to provide datasource file location\n" unless defined( $datasourcefile);
     #my $t =  App::Pipeline::Lite2::Datasource->new( datasource_file => $datasourcefile );         
     my $t = Data::Table::fromTSV( $datasourcefile->stringify );

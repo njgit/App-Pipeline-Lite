@@ -12,6 +12,7 @@ use App::Pipeline::Lite4::Parser;
 use App::Pipeline::Lite4::Resolver;
 use App::Pipeline::Lite4::Grapher;
 use File::Copy;
+use Data::Dumper;
 has smoke_test => ( isa => 'Bool', is => 'rw', default => sub {0} ); 
 has external_dispatcher => ( isa => 'Path::Tiny|Undef', is => 'rw', 
                               lazy_build => 1 );
@@ -49,7 +50,8 @@ sub run_pipeline {
     
     $parser->parse(  $self->pipeline_preparse_file, 
                      $self->pipeline_parse_file  );
-        
+    #warn "WORKING WITH DATASOURCE: " .    $self->datasource_file;
+      
     my $resolver = App::Pipeline::Lite4::Resolver->new (                      
                        pipeline_dir         => $self->pipeline_dir,
                        #datasource_file      => $self->datasource_resolved_file,
@@ -58,7 +60,10 @@ sub run_pipeline {
                        step_filter_str      => defined( $self->step_filter_str) ? $self->step_filter_str : undef,
                        job_filter_str       => defined( $self->job_filter_str) ? $self->job_filter_str : undef,
                        #run_num_dep          => defined( $self->run_num_dep ) ? $self->run_num_dep : undef
-                       );                      
+                       );   
+                       
+   #warn Dumper $resolver->pipeline_datasource;                                       
+   
    $resolver->resolve($self->pipeline_parse_file,$self->pipeline_resolved_file); 
    
    

@@ -15,7 +15,7 @@ use App::Pipeline::Lite4::Util;
 use Storable qw(dclone);
 extends 'App::Pipeline::Lite4::Base';
 
-has pipeline_datasource  => ( isa => 'Data::Table', is => 'rw', lazy_build =>1 );
+#has pipeline_datasource  => ( isa => 'Data::Table', is => 'rw', lazy_build =>1 );
 has placeholder_hash     => ( isa =>'HashRef', is => 'rw', default => sub {return {}});
 has current_run_num => ( isa => 'Num|Undef', is => 'rw');
 has current_run_dir => (isa => Path, is =>'rw', lazy_build => 1);
@@ -353,8 +353,11 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                    #and $output_run_dir[2] should not exist. 
                    # anyway this below is just the case where the step name exists.
                }elsif ( ( ! defined $output_run_dir[1] ) and ( ! defined $output_run_dir[2] ) and ( defined $output_run_dir[0] ) ) {
-                  pop @output_run_dir; #remove last entry because it def can't be undefined I guess.
+                  pop @output_run_dir; #remove last entry because it def can't be undefined I guess, no, remove last entry because we only want the step dir
                   $output_files = $self->_generate_file_output_location($JOB_NUM, \@output_run_dir)->stringify;
+                  #warn "PLACEHOLDER", $placeholder;
+                  #warn "OUTPUT RUN DIR (NORMAL PLCHOLDER) ". Dumper @output_run_dir;
+                  #warn "OUTPUTFILES(NORMAL PLCHOLDER) ".$output_files;
                }
                $self->logger->debug("step $step_name. Extracted a run dir from: @output_run_dir. Full path is $output_files ");  
             }
@@ -402,30 +405,36 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                # get the datasource
                
                my $col_names = $self->pipeline_datasource->{header};
+               #warn "WORKING WITH DATASOURCE: " . $self->datasource_file;
+               #warn "DATASOURCE: " . Dumper $self->pipeline_datasource;
+               
                my $col_names_rgx_str = join "|", @$col_names;               
-               my $groupby_placeholder_rgx_str = 'groupby\.('.$col_names_rgx_str . ')\.(' . $col_names_rgx_str . ')*\.*(.+)$';  
+               my $groupby_placeholder_rgx_str = 'groupby\.('.$col_names_rgx_str . ')\.(' . $col_names_rgx_str . ')*\.*([\w\-]+)\.(.+)$';  
                #warn "PLACEHOLDER $placeholder";
                #warn "PLACEHOLDER RGX:", $groupby_placeholder_rgx_str;
                $groupby_placeholder_rgx = qr/$groupby_placeholder_rgx_str/;
                my @output_run_dir = $placeholder =~  $groupby_placeholder_rgx;
                #warn "PLACEHOLDER PARTS:", Dumper @output_run_dir;
-               
+              
                # check if the second argument is present
                my @group_names;
                if ( defined $output_run_dir[1] ){
+                    warn "1. " . Dumper @output_run_dir;
                    @group_names = @output_run_dir[0,1];
                    @output_run_dir = @output_run_dir[2 .. $#output_run_dir];
+                    
                }else{
+                    warn "2. " . Dumper @output_run_dir;
                    @group_names = $output_run_dir[0 ];
                    @output_run_dir = @output_run_dir[2 .. $#output_run_dir];
                }
-               #warn "OUTPUTDIR @output_run_dir";
+                # warn "OUTPUTDIR @output_run_dir";
                if ( ! defined $output_run_dir[0] ){
                    ouch 'App_Pipeline_Lite4_ERROR', "The groupby placeholder has a group name that does not exist in the datasource";
                }
                      
                # now get the mapping of job ids
-               
+               #warn "OUTPUTDIR", "@output_run_dir";
                my $util = App::Pipeline::Lite4::Util->new;
                #warn "GROUP NAMES: @group_names";
                my $job_map_hash = $util->datasource_groupby2( $self->pipeline_datasource, @group_names );
@@ -461,6 +470,7 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
             }
          }  
    }
+   #warn Dumper $self->placeholder_hash;
 }
 
 =method _create_directory_structure_from_placeholder_hash  
