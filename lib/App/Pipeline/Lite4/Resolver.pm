@@ -304,7 +304,7 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
    my $self = shift;
    my $JOB_NUM = shift;
    my $step_struct = $self->pipeline_step_struct; # we have placeholders parsed for each step
-   warn "JOB_NUM $JOB_NUM";
+   #warn "JOB_NUM $JOB_NUM";
    foreach my $step_name (keys %$step_struct ){
       $self->logger->log( "debug", "Processing Pipeline to placeholder hash step " . $step_name);
       my $placeholders = $step_struct->{$step_name}->{placeholders}; 
@@ -404,11 +404,11 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                my $col_names = $self->pipeline_datasource->{header};
                my $col_names_rgx_str = join "|", @$col_names;               
                my $groupby_placeholder_rgx_str = 'groupby\.('.$col_names_rgx_str . ')\.(' . $col_names_rgx_str . ')*\.*(.+)$';  
-               warn "PLACEHOLDER $placeholder";
-               warn "PLACEHOLDER RGX:", $groupby_placeholder_rgx_str;
+               #warn "PLACEHOLDER $placeholder";
+               #warn "PLACEHOLDER RGX:", $groupby_placeholder_rgx_str;
                $groupby_placeholder_rgx = qr/$groupby_placeholder_rgx_str/;
                my @output_run_dir = $placeholder =~  $groupby_placeholder_rgx;
-               warn "PLACEHOLDER PARTS:", Dumper @output_run_dir;
+               #warn "PLACEHOLDER PARTS:", Dumper @output_run_dir;
                
                # check if the second argument is present
                my @group_names;
@@ -419,7 +419,7 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                    @group_names = $output_run_dir[0 ];
                    @output_run_dir = @output_run_dir[2 .. $#output_run_dir];
                }
-               warn "OUTPUTDIR @output_run_dir";
+               #warn "OUTPUTDIR @output_run_dir";
                if ( ! defined $output_run_dir[0] ){
                    ouch 'App_Pipeline_Lite4_ERROR', "The groupby placeholder has a group name that does not exist in the datasource";
                }
@@ -427,9 +427,9 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                # now get the mapping of job ids
                
                my $util = App::Pipeline::Lite4::Util->new;
-               warn "GROUP NAMES: @group_names";
+               #warn "GROUP NAMES: @group_names";
                my $job_map_hash = $util->datasource_groupby2( $self->pipeline_datasource, @group_names );
-               warn Dumper $job_map_hash;
+               #warn Dumper $job_map_hash;
                
                # So now run through the jobids and make strings of the files
                # we only do the jobs that we need to do, i.e. since we have grouped into 4 groups, 
@@ -450,7 +450,7 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                my $job_filter = $self->job_filter;
                @stepfiles = @stepfiles[@$job_filter] if defined ( $job_filter );
                $output_files = join ' ', @stepfiles;
-               warn "STEPFILES: $output_files";
+               #warn "STEPFILES: $output_files";
                
             } 
             

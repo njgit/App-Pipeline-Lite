@@ -83,10 +83,7 @@ sub _add_dependents_for_step_via_placeholder {
          $rgx3 = qr{$rgx3_str};
        }
      } 
-     warn "REGEX3 $rgx3"; 
-     
-     
-     
+     #warn "REGEX3 $rgx3";     
      my $placeholders = $step->{placeholders};
      my $dependents   = $step->{dependents};
      
@@ -96,7 +93,7 @@ sub _add_dependents_for_step_via_placeholder {
          ($placeholder_step_name) = $placeholder =~ $rgx3 unless defined($placeholder_step_name);
          ($placeholder_step_name) = $placeholder =~ $rgx1 unless defined($placeholder_step_name);
           
-          warn "GOT STEP NAME: $placeholder_step_name from $placeholder";
+         # warn "GOT STEP NAME: $placeholder_step_name from $placeholder";
          $self->logger->debug("step $step_name: placeholder step name - $placeholder_step_name (from $placeholder)");  
          next unless defined($placeholder_step_name);
          
@@ -142,15 +139,15 @@ sub _add_dependents_for_step_via_placeholder {
                        #we take the job number and get the group we need
                        my $util = App::Pipeline::Lite4::Util->new;
                        my $params = $step->{condition_params};
-                       warn "PARAMS: ", Dumper $params;
+                       #warn "PARAMS: ", Dumper $params;
                        my $groupby_hash = $util->datasource_groupby2( $self->pipeline_datasource, @$params );
                        my @groupby_ids = sort keys %$groupby_hash;
-                       warn "GRAPHER JOBNUM: $job_num";
-                       warn "GRAPHER GROUPID: @groupby_ids";
-                       warn "gRAPHER CMD", $step->{cmd};
-                       warn "STEP",  Dumper $step;
+                       #warn "GRAPHER JOBNUM: $job_num";
+                       #warn "GRAPHER GROUPID: @groupby_ids";
+                       #warn "gRAPHER CMD", $step->{cmd};
+                       #warn "STEP",  Dumper $step;
                        my $group_id = $groupby_ids[$job_num]; 
-                       warn "GRAPHER GROUPID: $group_id";
+                       #warn "GRAPHER GROUPID: $group_id";
                        my $job_ids = $groupby_hash->{$group_id};
                        foreach my $job_id (@$job_ids){  
                            push( @$dependents, "$job_id.$placeholder_step_name" ) unless ( $this_step_name or $existing_dependents) ;
