@@ -419,12 +419,12 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                # check if the second argument is present
                my @group_names;
                if ( defined $output_run_dir[1] ){
-                    warn "1. " . Dumper @output_run_dir;
+
                    @group_names = @output_run_dir[0,1];
                    @output_run_dir = @output_run_dir[2 .. $#output_run_dir];
                     
                }else{
-                    warn "2. " . Dumper @output_run_dir;
+
                    @group_names = $output_run_dir[0 ];
                    @output_run_dir = @output_run_dir[2 .. $#output_run_dir];
                }
