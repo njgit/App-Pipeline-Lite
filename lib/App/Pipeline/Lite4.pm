@@ -63,7 +63,8 @@ sub run_pipeline {
    
    
     my $grapher = App::Pipeline::Lite4::Grapher->new ( 
-                       pipeline_dir => $self->pipeline_dir,
+                       pipeline_dir    => $self->pipeline_dir,
+                       datasource_file => $self->datasource_file,
                        );     
                                          
     $grapher->add_dependents(  $self->pipeline_resolved_file, 
