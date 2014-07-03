@@ -265,6 +265,9 @@ sub _add_input_files_to_placeholder_hash {
 }
 
 # placeholder hash is where we have {step0}{file1} = value
+# currently we leave it for the groupby case, so that we just have a long key that still matched fine
+# probably we should have the step and its field names as one key 
+# {groupby}{cmp.hmr}{file.name} = /outputdir/job../hmr/file.name
 sub _placeholder_hash_add_item{
    #TYPE: ( Str :$keystr, Str :$value) 
    my $self   = shift;

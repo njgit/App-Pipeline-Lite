@@ -147,6 +147,12 @@ sub concat_to_cmd {
                $step_hash->{$step} .= $concat_str if $type_of_concat eq 'APPEND';
                $step_hash->{$step}  = $concat_str . $step_hash->{$step} if $type_of_concat eq 'PREPEND' ;                             
            }
+           
+            if($step_cond eq 'groupby'){              
+               $step_hash->{$step} .= $concat_str if $type_of_concat eq 'APPEND';
+               $step_hash->{$step}  = $concat_str . $step_hash->{$step} if $type_of_concat eq 'PREPEND' ;                             
+           }
+           
        } else {
                $step_hash->{$step} .= $concat_str if $type_of_concat eq 'APPEND';
                $step_hash->{$step} =  $concat_str . $step_hash->{$step} if $type_of_concat eq 'PREPEND' ;
