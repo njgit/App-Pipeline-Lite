@@ -800,10 +800,15 @@ $fatpacked{"App/Pipeline/Lite4/Command/symlink.pm"} = '#line '.(1+__LINE__).' "'
           if( defined $opt->{run_num} ) {
             $run_num = $opt->{run_num};
           }
-        
-          #get datasource from settings directory and set to datasource file
-          $resolver->datasource_file( $resolver->datasource_from_run($run_num) );
-          my $datasource = $resolver->pipeline_datasource;
+          
+          my $datasource;
+          if( defined( $opt->{datasource} )){
+            $datasource = $resolver->datasource_file($opt->{datasource} )  ;
+          }else{
+            #get datasource from settings directory and set to datasource file
+            $resolver->datasource_file( $resolver->datasource_from_run($run_num) );
+            $datasource = $resolver->pipeline_datasource;
+          }
            
           my $output_run_dir = path( $resolver->output_dir, "run".$run_num);
           my @jobs = nsort grep { /job/ } $output_run_dir->children;
@@ -92444,7 +92449,8 @@ sub symlink {
           'id_field|f=s'   => 'Field in the datasource that will be the file prefix',
           'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME (required)',
           'path|p=s' => 'Path of directory, which will be created if it does not exist',
-          'name|n=s' => 'Replaces filename with new name'
+          'name|n=s' => 'Replaces filename with new name',
+          'datasource|d=s' => 'Path to datasource file, if not given then datasource of the last run will be used'
           );  
       $c->getopt( keys %options );
       return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;

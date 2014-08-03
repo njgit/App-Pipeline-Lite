@@ -154,7 +154,8 @@ sub symlink {
           'id_field|f=s'   => 'Field in the datasource that will be the file prefix',
           'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME (required)',
           'path|p=s' => 'Path of directory, which will be created if it does not exist',
-          'name|n=s' => 'Replaces filename with new name'
+          'name|n=s' => 'Replaces filename with new name',
+          'datasource|d=s' => 'Path to datasource file, if not given then datasource of the last run will be used'
           );  
       $c->getopt( keys %options );
       return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;

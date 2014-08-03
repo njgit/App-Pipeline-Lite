@@ -30,10 +30,15 @@ sub execute {
         if( defined $opt->{run_num} ) {
           $run_num = $opt->{run_num};
         }
-      
-        #get datasource from settings directory and set to datasource file
-        $resolver->datasource_file( $resolver->datasource_from_run($run_num) );
-        my $datasource = $resolver->pipeline_datasource;
+        
+        my $datasource;
+        if( defined( $opt->{datasource} )){
+          $datasource = $resolver->datasource_file($opt->{datasource} )  ;
+        }else{
+          #get datasource from settings directory and set to datasource file
+          $resolver->datasource_file( $resolver->datasource_from_run($run_num) );
+          $datasource = $resolver->pipeline_datasource;
+        }
          
         my $output_run_dir = path( $resolver->output_dir, "run".$run_num);
         my @jobs = nsort grep { /job/ } $output_run_dir->children;
