@@ -186,9 +186,17 @@ sub _add_dependents_for_step_via_placeholder {
                  
              }else{                 
                  #$existing_dependents =  any { $_ eq "$job_num.$placeholder_step_name"  }  @$dependents;
-                 #$this_step_name = 1 if( $placeholder_step_name eq $step_name);                 
-                 push( @$dependents, "$job_num.$placeholder_step_name")
-                   unless ($this_step_name or $existing_dependents) ;
+                 #$this_step_name = 1 if( $placeholder_step_name eq $step_name);  
+                 if( defined $valid_steps_hash->{$placeholder_step_name}->{condition} ){                     
+                     if( $valid_steps_hash->{$placeholder_step_name}->{condition} eq 'once'){
+                          push( @$dependents, "$lowest_job_num.$placeholder_step_name")
+                              unless ($this_step_name or $existing_dependents) ; 
+                     }
+                     
+                  }else{
+                    push( @$dependents, "$job_num.$placeholder_step_name")
+                      unless ($this_step_name or $existing_dependents) ;
+                 }
              }       
          #}         
      }
