@@ -20,11 +20,13 @@ sub create_pipeline_directory {
     my $test_data_file  = $self->test_data_file;
     my $datasource_file = $self->datasource_file;
     my $software_dir    = $self->software_dir;
+    my $sys_dir         = $self->sys_dir;
     ouch 'App_Pipeline_Lite4_Error', "That pipeline already exists."  if $dir->exists;
     $dir->mkpath();  
     $output_dir->mkpath();
     $input_dir->mkpath();
     $software_dir->mkpath();
+    $sys_dir->mkpath();
     
     #set output file and read to config file
     $self->config->{_}->{output_dir} = $output_dir->absolute->stringify;
@@ -33,13 +35,19 @@ sub create_pipeline_directory {
     $self->config->write($self->config_file->absolute->stringify); 
     
     #create a small pipeline file and a dummy test data directory
-    $pipeline_file->spew("1. wc -l [% step0.file1 %] > [% step1.file1 %]");
+ 
+    $pipeline_file->spew("seq. seq [% datasource.N %] | grep -v ‘[% datasource.filter %]’ > [% seq.filterseq.txt %]");
     $test_data_file->parent->mkpath();
-    $test_data_file->spew("line1\nline2\nline3");
-    
+    #$test_data_file->spew("line1\nline2\nline3");    
+my $ds = "N\tfilter\tgroup\tname
+12\t5|6\tA\tjames
+15\t7|8\tB\tnozomi
+16\t9|10\tA\tryan
+20\t12|13\tB\ttiffiny";
+     
     #create a small datasource file
-    my $datasource = "step0.file1\n" . $test_data_file->absolute->stringify;
-    $datasource_file->spew($datasource);
+    #my $datasource = "step0.file1\n" . $test_data_file->absolute->stringify;
+    $datasource_file->spew($ds);
     $self->create_logfile_config;
 }
 

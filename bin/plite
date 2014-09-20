@@ -9,6 +9,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Sort::Naturally;
+use Path::Tiny; # only need this for reconfigure-remove when done
 use Moo;
 use App::Pipeline::Lite4::Command::viewpipeline;
 use App::Pipeline::Lite4::Command::viewgraph;
@@ -59,6 +60,7 @@ sub vp {
      my %options = (
          'editor|e=s' => 'Sets the editor e.g. plite vp -e vim. Overrides config file setting if exists.'
      );
+
      return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;
      $c->getopt( keys %options );
      App::Pipeline::Lite4::Command::viewpipeline->new->execute($c->options, $c->argv);
@@ -180,6 +182,7 @@ sub symlink {
 #      return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;
 #      App::Pipeline::Lite4::Command::symlink2->new->execute($c->options, $c->argv);
 #}
+
 
 sub _options_str {
     my $options = shift;

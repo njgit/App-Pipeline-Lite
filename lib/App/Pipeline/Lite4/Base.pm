@@ -35,6 +35,7 @@ has logconffile      => ( isa => Path, is => 'rw',  lazy_build => 1);
 
 has output_dir       => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build => 1 );
 has input_dir        => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build =>1  );
+has sys_dir          => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build =>1  );
 has software_dir     => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build =>1  );
 has software_ini      => (isa => 'Config::Tiny', is => 'rw', lazy_build => 1 );
 has software_ini_file => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build =>1  );
@@ -84,22 +85,22 @@ sub _build_pipeline_file {
 
 sub _build_pipeline_preparse_file {
     my $self = shift;
-    return path( $self->pipeline_dir, $self->pipeline_name . '.preparse.yaml') ; 
+    return path(   $self->sys_dir,  $self->pipeline_name . '.preparse.yaml') ; 
 }
 
 sub _build_pipeline_parse_file {
     my $self = shift;
-    return path( $self->pipeline_dir, $self->pipeline_name . '.parse.yaml') ; 
+    return path(   $self->sys_dir, $self->pipeline_name . '.parse.yaml') ; 
 }
 
 sub _build_pipeline_resolved_file {
     my $self = shift;
-    return path( $self->pipeline_dir, $self->pipeline_name . '.resolved.yaml') ; 
+    return path(   $self->sys_dir, $self->pipeline_name . '.resolved.yaml') ; 
 }
 
 sub _build_pipeline_graph_file {
     my $self = shift;
-    return path( $self->pipeline_dir, $self->pipeline_name . '.graph.yaml') ; 
+    return path(  $self->sys_dir,  $self->pipeline_name . '.graph.yaml') ; 
 }
 
 sub _build_pipeline_submission_file {
@@ -239,6 +240,15 @@ sub _build_software_dir {
     return path( $self->pipeline_dir, 'software'  ); 
 }
 
+sub _build_sys_dir {
+    my $self = shift;
+    my $sys_dir = $self->config->{_}->{sys_dir}; 
+    return path($sys_dir) if(defined( $sys_dir)) ;    
+    my $sys_path= path( $self->pipeline_dir, 'sys'  ); 
+    mkdir $sys_path unless $sys_path->exists; #while old systems catch up
+    return $sys_path;
+}
+
 sub _build_datasource_file {
     my $self = shift;
     return path( $self->pipeline_dir, $self->pipeline_name . '.datasource');
@@ -308,6 +318,13 @@ sub datasource_from_run {
     return $datasource_path;
 }
 
+#sub _reconfigure {
+#    my $self = shift;
+#    my $old  = shift;
+#    my $new  = shift;
+#    return if( ! path($old)->exists)
+#    mv path($old)-> ;
+#}
 
 
 
