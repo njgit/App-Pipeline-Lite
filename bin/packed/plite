@@ -803,7 +803,8 @@ $fatpacked{"App/Pipeline/Lite4/Command/symlink.pm"} = '#line '.(1+__LINE__).' "'
           
           my $datasource;
           if( defined( $opt->{datasource} )){
-            $datasource = $resolver->datasource_file($opt->{datasource} )  ;
+            $resolver->datasource_file($opt->{datasource} );
+            $datasource = $resolver->pipeline_datasource;
           }else{
             #get datasource from settings directory and set to datasource file
             $resolver->datasource_file( $resolver->datasource_from_run($run_num) );
@@ -1150,12 +1151,13 @@ $fatpacked{"App/Pipeline/Lite4/Grapher.pm"} = '#line '.(1+__LINE__).' "'.__FILE_
                          my $params = $step->{condition_params};
                          #warn "PARAMS: ", Dumper $params;
                          my $groupby_hash = $util->datasource_groupby2( $self->pipeline_datasource, @$params );
-                         my @groupby_ids = sort keys %$groupby_hash;
+                         my $groupby_ids  = $util->datasource_groupby2_order($self->pipeline_datasource, @$params);
+                         #my @groupby_ids = sort keys %$groupby_hash;
                          #warn "GRAPHER JOBNUM: $job_num";
                          #warn "GRAPHER GROUPID: @groupby_ids";
                          #warn "gRAPHER CMD", $step->{cmd};
                          #warn "STEP",  Dumper $step;
-                         my $group_id = $groupby_ids[$job_num]; 
+                         my $group_id = $groupby_ids->[$job_num]; 
                          #warn "GRAPHER GROUPID: $group_id";
                          my $job_ids = $groupby_hash->{$group_id};
                          
@@ -1176,7 +1178,7 @@ $fatpacked{"App/Pipeline/Lite4/Grapher.pm"} = '#line '.(1+__LINE__).' "'.__FILE_
                                }else{
                                   
                                   push(@$dependents, "$job_num.$placeholder_step_name") 
-                                     unless ( $this_step_name or $existing_dependents or ($job_num >= scalar(@groupby_ids)) ); 
+                                     unless ( $this_step_name or $existing_dependents or ($job_num >= scalar(@$groupby_ids)) ); 
                                } 
                            }
                            #do something for once here
@@ -1190,9 +1192,17 @@ $fatpacked{"App/Pipeline/Lite4/Grapher.pm"} = '#line '.(1+__LINE__).' "'.__FILE_
                    
                }else{                 
                    #$existing_dependents =  any { $_ eq "$job_num.$placeholder_step_name"  }  @$dependents;
-                   #$this_step_name = 1 if( $placeholder_step_name eq $step_name);                 
-                   push( @$dependents, "$job_num.$placeholder_step_name")
-                     unless ($this_step_name or $existing_dependents) ;
+                   #$this_step_name = 1 if( $placeholder_step_name eq $step_name);  
+                   if( defined ( $valid_steps_hash->{$placeholder_step_name}->{condition} ) ){                     
+                       if( $valid_steps_hash->{$placeholder_step_name}->{condition} eq 'once'){
+                            push( @$dependents, "$lowest_job_num.$placeholder_step_name")
+                                unless ($this_step_name or $existing_dependents) ; 
+                       }
+                       
+                    }else{
+                      push( @$dependents, "$job_num.$placeholder_step_name")
+                        unless ($this_step_name or $existing_dependents) ;
+                   }
                }       
            #}         
        }
@@ -1693,10 +1703,22 @@ $fatpacked{"App/Pipeline/Lite4/Resolver.pm"} = '#line '.(1+__LINE__).' "'.__FILE
   
   sub _build_job_filter  {
       my $self= shift;
+      
+      #check the jobs don't exceed the datasource  
+      my $ds_rows = $self-> pipeline_datasource->nofRow;
+          
       if( defined $self->job_filter_str ) {
           #my @jobs_to_keep = $self->job_filter_str->split('\s+');
           #return \@jobs_to_keep;
-          return $self->_parse_job_filter_str($self->job_filter_str);
+          my $jobs = $self->_parse_job_filter_str($self->job_filter_str);
+          my $max_job = max( @$jobs );
+          #$self->logger->debug("Check max job filter row with number of datasource rows: ($ds_rows) ");
+          $self->logger->debug("Check max of jobs in job filter: ( @$jobs max = $max_job) 
+                                 with num of datasource rows: ($ds_rows) ");
+          #jobs start from 0                       
+          ouch 'App_Pipeline_Lite4_ERROR', "max job in filter exceeds datasource row." if $max_job >= $ds_rows ;
+                
+          return $jobs;
       } else {
           return undef;    
       }   
@@ -1771,6 +1793,10 @@ $fatpacked{"App/Pipeline/Lite4/Resolver.pm"} = '#line '.(1+__LINE__).' "'.__FILE
         
        my $resolved_step_struct = $self->pipeline_step_struct_resolved;
        $self->logger->debug( "Jobs to keep: @$jobs_to_keep\n");
+       
+       $self->logger->debug( "RESOLVED STEP STRUCT BEFORE FILTER: " . Dumper($resolved_step_struct)  );
+  
+       
        foreach my $job_num (keys %$resolved_step_struct) {
            
             #### WE WANT ANY####
@@ -1781,6 +1807,8 @@ $fatpacked{"App/Pipeline/Lite4/Resolver.pm"} = '#line '.(1+__LINE__).' "'.__FILE
                    
            delete $resolved_step_struct->{$job_num} unless $dont_delete;
        }
+       
+       $self->logger->debug( "RESOLVED STEP STRUCT AFTER FILTER: " . Dumper($resolved_step_struct)  );
   }
   
   sub resolve {
@@ -1803,8 +1831,7 @@ $fatpacked{"App/Pipeline/Lite4/Resolver.pm"} = '#line '.(1+__LINE__).' "'.__FILE
            $self->_add_data_source_to_placeholder_hash( $row);
             #add input file directory to placeholder hash
            $self->_add_input_files_to_placeholder_hash;
-           #add software to placeholder hash
-           $self->_add_software_to_placeholder_hash;
+          
            # add globals to placeholder hash      
            ##$self->_add_dir_to_placeholder_hash ( dir_name => 'global', dir_path => dir( $self->output_dir , 'run' . ($self->current_run_num) )); 
            # add data dir to placeholder hash 
@@ -1814,10 +1841,14 @@ $fatpacked{"App/Pipeline/Lite4/Resolver.pm"} = '#line '.(1+__LINE__).' "'.__FILE
            $self->_add_steps_in_step_struct_to_placeholder_hash($row);
            $self->_create_directory_structure_from_placeholder_hash;         
            
+           # add software to placeholder hash - MUST GO AFTER CREATE DIRECTORY
+           # OTHERWISE DIRECTORIES WILL BE MADE FOR SOFTWARE
+           $self->_add_software_to_placeholder_hash;
+           
            # add in the output files expected for each step to the placeholder hash       
            $self->_add_expected_output_files_to_placeholder_hash( $row);
            $self->_add_expected_output_files_to_jobs_in_placeholder_hash;
-        #   warn Dumper $self->placeholder_hash;
+           #warn Dumper $self->placeholder_hash;
   
            # validate placeholders against placeholder hash
            $self->_validate_placeholder_hash_with_placeholders;
@@ -2638,6 +2669,7 @@ $fatpacked{"App/Pipeline/Lite4/Util.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."
   # the two column mergedin to a specific column
   # the exception is for grouptransby which will work with two columns in general I think.
   # for testing purposes we have this here.
+  =cut
   sub datasource_groupby2 {
     my $self = shift;
     my $datasource_table  =shift;
@@ -2662,6 +2694,59 @@ $fatpacked{"App/Pipeline/Lite4/Util.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."
     }
     return \%group_hash; 
   }
+  =cut
+  sub datasource_groupby2 {
+    my $self = shift;
+    my $datasource_table  =shift;
+    my $groupby_field1 = shift;
+    my $groupby_field2 = shift;
+    my $grouphash_and_order_array = datasource_groupby2main($datasource_table,$groupby_field1,$groupby_field2);
+    return $grouphash_and_order_array->[0];
+  }
+  
+  
+  sub datasource_groupby2main {
+    #my $self = shift;
+    my $datasource_table  =shift;
+    my $groupby_field1 = shift;
+    my $groupby_field2 = shift;
+    my %group_hash; 
+    # create hash
+    my $next = $datasource_table->iterator();
+    my $i = 0;
+    my @group_array;
+    my @group_array_unique;
+    while( my $row = $next->() ){ 
+      #warn Dumper $row;
+      if( defined($groupby_field1) and defined( $groupby_field2 )){    
+          push( @{ $group_hash{$row->{$groupby_field1} .'-' . $row->{$groupby_field2} } } , $i );  
+          push( @group_array, $row->{$groupby_field1} .'-' . $row->{$groupby_field2});
+      }elsif( defined($groupby_field1 ) ){
+          push( @{ $group_hash{ $row->{$groupby_field1} } }, $i );   
+          push( @group_array, $row->{$groupby_field1} );
+      }else{
+          ouch "App_Pipeline_Lite4_Error","No groupby fields to group by";
+      }
+        
+      $i++;
+    }
+    @group_array_unique = uniq( @group_array);
+    return [ \%group_hash, \@group_array_unique]; 
+  }
+  
+  
+  # this gives back group ids in an ordering that
+  # is ordered by first instance of group in the datasource
+  sub datasource_groupby2_order {
+    my $self = shift;
+    my $datasource_table  =shift;
+    my $groupby_field1 = shift;
+    my $groupby_field2 = shift;
+    my $grouphash_and_order_array = datasource_groupby2main($datasource_table,$groupby_field1,$groupby_field2);
+    return $grouphash_and_order_array->[1];
+  }
+  
+   
   
   sub datasource_groupby2_num_groups {
     my $self = shift;
@@ -92414,7 +92499,7 @@ sub run {
          'smoke_test|m'   => 'Runs pipeline with out dispatching jobs',
          'run|r=i'        => 'Run on this run number',
          'steps|s=s'      => 'Run only these steps',
-         'jobs|j=s'       => "Only run these jobs. Corresponds to rows in datasource. e.g --jobs '1,5,7-21' "
+         'jobs|j=s'       => "Only run these jobs. Corresponds to rows in datasource. e.g --jobs '1,5,7-21' . Starts from job 0"
          # IN ORDER OF USEFULNESS: 
          # 'jobs|j=s'  => 'Run only on these job numbers (corresponds to rows in the datasource)'
          # 'run|r=i'   => 'Run on this run number',
@@ -92448,7 +92533,7 @@ sub symlink {
           'run_num|r=i'  => 'run_num',
           'id_field|f=s'   => 'Field in the datasource that will be the file prefix',
           'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME (required)',
-          'path|p=s' => 'Path of directory, which will be created if it does not exist',
+          'path|p=s' => 'Path of symlink directory other than default, which will be created if it does not exist',
           'name|n=s' => 'Replaces filename with new name',
           'datasource|d=s' => 'Path to datasource file, if not given then datasource of the last run will be used'
           );  

@@ -1,5 +1,6 @@
 bin/make_test_data.pl
 fatlib
+td/test-3.datasource
 td/test-pipeline-1/test-pipeline-1.graph.yaml
 td/test-pipeline-1/test-pipeline-1.parse.yaml
 td/test-pipeline-1/test-pipeline-1.pipeline
@@ -12,3 +13,12 @@ td/test-pipeline-1/output
 td/test-pipeline-2
 td/test-pipeline-3
 td/test-pipeline-4
+td/test-pipeline-5/output/
+td/test-pipeline-5/test-pipeline-5.graph.yaml
+td/test-pipeline-5/test-pipeline-5.parse.yaml
+td/test-pipeline-5/test-pipeline-5.preparse.yaml
+td/test-pipeline-5/test-pipeline-5.resolved.yaml
+td/test-pipeline-5/test-pipeline-5.submissions.txt
+td/test-pipeline-5/symlink/
+td/test-pipeline-6
+td/test-pipeline-7

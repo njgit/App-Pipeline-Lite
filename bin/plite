@@ -17,6 +17,7 @@ use App::Pipeline::Lite4::Command::new;
 use App::Pipeline::Lite4::Command::run;
 use App::Pipeline::Lite4::Command::file;
 use App::Pipeline::Lite4::Command::symlink;
+use App::Pipeline::Lite4::Command::symlink2;
 
 sub setup {
      my $c = shift;
@@ -32,7 +33,8 @@ sub setup {
          #ve => "view error",
          run => "run pipeline",
          file => "get files",
-         symlink => "symlink files"
+         symlink => "symlink files",
+      #   symlink2 => "symlink files"
          } );
 }
 
@@ -119,7 +121,7 @@ sub run {
          'smoke_test|m'   => 'Runs pipeline with out dispatching jobs',
          'run|r=i'        => 'Run on this run number',
          'steps|s=s'      => 'Run only these steps',
-         'jobs|j=s'       => "Only run these jobs. Corresponds to rows in datasource. e.g --jobs '1,5,7-21' "
+         'jobs|j=s'       => "Only run these jobs. Corresponds to rows in datasource. e.g --jobs '1,5,7-21' . Starts from job 0"
          # IN ORDER OF USEFULNESS: 
          # 'jobs|j=s'  => 'Run only on these job numbers (corresponds to rows in the datasource)'
          # 'run|r=i'   => 'Run on this run number',
@@ -153,14 +155,31 @@ sub symlink {
           'run_num|r=i'  => 'run_num',
           'id_field|f=s'   => 'Field in the datasource that will be the file prefix',
           'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME (required)',
-          'path|p=s' => 'Path of directory, which will be created if it does not exist',
+          #'path|p=s' => 'Path of symlink directory other than default, which will be created if it does not exist',
           'name|n=s' => 'Replaces filename with new name',
           'datasource|d=s' => 'Path to datasource file, if not given then datasource of the last run will be used'
           );  
       $c->getopt( keys %options );
       return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;
-      App::Pipeline::Lite4::Command::symlink->new->execute($c->options, $c->argv);
+      App::Pipeline::Lite4::Command::symlink2->new->execute($c->options, $c->argv);
 }
+
+#sub symlink2 {
+#      my $c = shift;
+#    my $desc = 'symlink (creates dir of symlinks) [OPTIONS] PIPELINE';
+#    my %options = (
+#           #'datasource|d=s' => 'Provides a path name to a datasource.',
+#          'run_num|r=i'  => 'run_num',
+#          'id_field|f=s'   => 'Field in the datasource that will be the file prefix',
+#          'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME (required)',
+#          'path|p=s' => 'Path of symlink directory other than default, which will be created if it does not exist',
+#          'name|n=s' => 'Replaces filename with new name',
+#          'datasource|d=s' => 'Path to datasource file, if not given then datasource of the last run will be used'
+#          );  
+#      $c->getopt( keys %options );
+#      return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;
+#      App::Pipeline::Lite4::Command::symlink2->new->execute($c->options, $c->argv);
+#}
 
 sub _options_str {
     my $options = shift;
