@@ -1,0 +1,57 @@
+#!/usr/bin/env perl
+use Modern::Perl;
+use YAML::Any;
+use Graph;
+use Path::Tiny;
+
+# BASIC BLOCKING DISPATCHER
+#
+# Currently read yaml file into graph - then go through the job_ids and see 
+# if they have a dependency - if not execute and delete from graph - if do skip
+# and keep going until no graph left. Probably better way to do this breadth first 
+# and focus on leaves
+
+die "Did not receive plite yaml file " unless defined($ARGV[0]);
+my $plite_yaml = path($ARGV[0]);
+my $pipeline_graph_and_jobs_yaml = $plite_yaml->slurp;
+my $graph_and_jobs = Load( $pipeline_graph_and_jobs_yaml );
+my $graph = make_graph( $graph_and_jobs);
+my @job_ids = $graph->vertices;
+dispatch_simple(\@job_ids, $graph);
+
+sub make_graph {
+   my $jobs = shift;
+   my $graph = Graph->new;
+ 
+   foreach my $job_num (keys %$jobs){
+     my $job = $jobs->{$job_num};
+     foreach my $stepinjob ( keys %$job ) {
+       my $dependents = $job->{$stepinjob}->{dependents};
+       if( @$dependents > 0 ){
+          foreach my $dependency (@$dependents) {
+              $graph->add_edge( $dependency, "$job_num.$stepinjob" );  #print "added  $dependency - $job_num.$stepinjob  to graph\n";            
+          }
+       }else{          
+        $graph->add_vertex("$job_num.$stepinjob"); #print "add vertex $job_num.$stepinjob\n";
+       }          
+     }   
+   }
+   return $graph; 
+}
+
+sub dispatch_simple {  
+  my ($job_ids, $graph ) = @_;
+  my $job_id;
+  while( @$job_ids > 0 ){    
+      $job_id = shift @$job_ids;
+      if( $graph->predecessors($job_id) > 0 ) {
+        push ( @$job_ids, $job_id); #goes back on the end   #warn "That one had a dependency put to back";         
+      }else{
+        
+        my ($job,$step) = split(/\./,$job_id); #print "system $job_id\n";
+        #print "Dispatch job $job and step $step:\n " . $graph_and_jobs->{ $job }->{$step}->{cmd}, "\n" ;
+        system( $graph_and_jobs->{ $job }->{$step}->{cmd} );  
+        $graph->delete_vertex($job_id);
+      }    
+  } 
+}
