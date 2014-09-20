@@ -1,0 +1,57 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use YAML::Any;
+use Graph::Easy;
+use Graph;
+use Graph::Convert;
+#use autobox::Core;
+use Path::Class qw(dir file);
+
+
+my $pipeline_dir = dir($ARGV[0]);
+my $pipeline_name = $pipeline_dir->basename;
+my $pipeline_graph_and_jobs_yaml_file = file($pipeline_dir, $pipeline_name . ".graph.yaml" );
+my $pipeline_graph_and_jobs_yaml = $pipeline_graph_and_jobs_yaml_file->slurp;
+my $graph_and_jobs = Load( $pipeline_graph_and_jobs_yaml );
+
+
+#Get graph
+my $graph_easy = Graph::Easy->new( $graph_and_jobs->[1] ); 
+my $graph = Graph::Convert->as_graph ( $graph_easy ); 
+my @job_ids = $graph->vertices; 
+    
+#Get jobs
+my $jobs = $graph_and_jobs->[0];
+    
+dispatch_simple(\@job_ids, $graph);
+
+# if a job has a dependency move to the next one.
+# if it doesn't execute it and remove it on finishing
+# when graph is out, it stops.
+
+sub dispatch_simple {
+  
+  my ($job_ids, $graph ) = @_;
+  my $job_id;
+  while( @$job_ids > 0 ){
+     
+      $job_id = shift @$job_ids;
+      if( $graph->predecessors($job_id) > 0 ) {
+        push ( $job_id, @$job_ids); #goes back on the end   
+        warn "That had dependency";  
+      }else{
+        system( $jobs->{$job_id} );  
+      }    
+  } 
+}
+
+# Another simple one - sort by job_id then execute them all
+# this won't work on something with some smoking dependency action  
+sub dispatch_very_simple {
+ my $job_ids = shift;
+ foreach my $job_id ( sort {$a <=> $b} @$job_ids) {    
+    system( $jobs->{$job_id} );
+ }
+}
+print "All Done\n";
