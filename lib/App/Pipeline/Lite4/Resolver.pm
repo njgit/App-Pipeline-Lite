@@ -56,10 +56,22 @@ sub _build_tot_jobs {
 
 sub _build_job_filter  {
     my $self= shift;
+    
+    #check the jobs don't exceed the datasource  
+    my $ds_rows = $self-> pipeline_datasource->nofRow;
+        
     if( defined $self->job_filter_str ) {
         #my @jobs_to_keep = $self->job_filter_str->split('\s+');
         #return \@jobs_to_keep;
-        return $self->_parse_job_filter_str($self->job_filter_str);
+        my $jobs = $self->_parse_job_filter_str($self->job_filter_str);
+        my $max_job = max( @$jobs );
+        #$self->logger->debug("Check max job filter row with number of datasource rows: ($ds_rows) ");
+        $self->logger->debug("Check max of jobs in job filter: ( @$jobs max = $max_job) 
+                               with num of datasource rows: ($ds_rows) ");
+        #jobs start from 0                       
+        ouch 'App_Pipeline_Lite4_ERROR', "max job in filter exceeds datasource row." if $max_job >= $ds_rows ;
+              
+        return $jobs;
     } else {
         return undef;    
     }   
@@ -134,6 +146,10 @@ sub _job_filter_on_resolved_step_struct   {
       
      my $resolved_step_struct = $self->pipeline_step_struct_resolved;
      $self->logger->debug( "Jobs to keep: @$jobs_to_keep\n");
+     
+     $self->logger->debug( "RESOLVED STEP STRUCT BEFORE FILTER: " . Dumper($resolved_step_struct)  );
+
+     
      foreach my $job_num (keys %$resolved_step_struct) {
          
           #### WE WANT ANY####
@@ -144,6 +160,8 @@ sub _job_filter_on_resolved_step_struct   {
                  
          delete $resolved_step_struct->{$job_num} unless $dont_delete;
      }
+     
+     $self->logger->debug( "RESOLVED STEP STRUCT AFTER FILTER: " . Dumper($resolved_step_struct)  );
 }
 
 sub resolve {
@@ -166,8 +184,7 @@ sub _resolve {
          $self->_add_data_source_to_placeholder_hash( $row);
           #add input file directory to placeholder hash
          $self->_add_input_files_to_placeholder_hash;
-         #add software to placeholder hash
-         $self->_add_software_to_placeholder_hash;
+        
          # add globals to placeholder hash      
          ##$self->_add_dir_to_placeholder_hash ( dir_name => 'global', dir_path => dir( $self->output_dir , 'run' . ($self->current_run_num) )); 
          # add data dir to placeholder hash 
@@ -177,10 +194,14 @@ sub _resolve {
          $self->_add_steps_in_step_struct_to_placeholder_hash($row);
          $self->_create_directory_structure_from_placeholder_hash;         
          
+         # add software to placeholder hash - MUST GO AFTER CREATE DIRECTORY
+         # OTHERWISE DIRECTORIES WILL BE MADE FOR SOFTWARE
+         $self->_add_software_to_placeholder_hash;
+         
          # add in the output files expected for each step to the placeholder hash       
          $self->_add_expected_output_files_to_placeholder_hash( $row);
          $self->_add_expected_output_files_to_jobs_in_placeholder_hash;
-      #   warn Dumper $self->placeholder_hash;
+         #warn Dumper $self->placeholder_hash;
 
          # validate placeholders against placeholder hash
          $self->_validate_placeholder_hash_with_placeholders;
@@ -444,7 +465,7 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                #warn Dumper $job_map_hash;
                
                # So now run through the jobids and make strings of the files
-               # we only do the jobs that we need to do, i.e. since we have grouped into 4 groups, 
+               # we only do the jobs that we need to do, i.e. since we have grouped into eg 4 groups, 
                # we only want to do the four jobs and these will be done on each iteration of _resolve looop 
                my @grouped_jobs = sort keys %$job_map_hash; 
                my $grouped_job_idx;
@@ -507,6 +528,7 @@ sub _create_directory_structure_from_placeholder_hash {
     $self->logger->debug(Dumper($placeholder_hash));
     foreach my $step (keys %$placeholder_hash ){
        next if( ($step eq 'step0') or ($step eq 'datasource')); # we don't create any directories from the source step values. (which could be filenames)
+       next if( ($step eq 'groupby')); # don't make directory on a groupby
        foreach my $param (keys $placeholder_hash->{$step} ){
            if ($param =~ /dir/) {
                my $dir = path( $placeholder_hash->{$step}->{$param} );
@@ -517,7 +539,8 @@ sub _create_directory_structure_from_placeholder_hash {
               my $file = path( $placeholder_hash->{$step}->{$param} );
               #make_path($file->parent->stringify);
               $file->parent->mkpath;
-              $self->logger->debug("Making directory: " . $file->parent->stringify );
+              $self->logger->debug("Making directory (step $step): " . $file->parent->stringify );
+               
            }
        }      
     }

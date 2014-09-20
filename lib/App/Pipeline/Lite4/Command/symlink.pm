@@ -33,7 +33,8 @@ sub execute {
         
         my $datasource;
         if( defined( $opt->{datasource} )){
-          $datasource = $resolver->datasource_file($opt->{datasource} )  ;
+          $resolver->datasource_file($opt->{datasource} );
+          $datasource = $resolver->pipeline_datasource;
         }else{
           #get datasource from settings directory and set to datasource file
           $resolver->datasource_file( $resolver->datasource_from_run($run_num) );

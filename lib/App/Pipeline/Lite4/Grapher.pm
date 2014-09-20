@@ -146,12 +146,13 @@ sub _add_dependents_for_step_via_placeholder {
                        my $params = $step->{condition_params};
                        #warn "PARAMS: ", Dumper $params;
                        my $groupby_hash = $util->datasource_groupby2( $self->pipeline_datasource, @$params );
-                       my @groupby_ids = sort keys %$groupby_hash;
+                       my $groupby_ids  = $util->datasource_groupby2_order($self->pipeline_datasource, @$params);
+                       #my @groupby_ids = sort keys %$groupby_hash;
                        #warn "GRAPHER JOBNUM: $job_num";
                        #warn "GRAPHER GROUPID: @groupby_ids";
                        #warn "gRAPHER CMD", $step->{cmd};
                        #warn "STEP",  Dumper $step;
-                       my $group_id = $groupby_ids[$job_num]; 
+                       my $group_id = $groupby_ids->[$job_num]; 
                        #warn "GRAPHER GROUPID: $group_id";
                        my $job_ids = $groupby_hash->{$group_id};
                        
@@ -172,7 +173,7 @@ sub _add_dependents_for_step_via_placeholder {
                              }else{
                                 
                                 push(@$dependents, "$job_num.$placeholder_step_name") 
-                                   unless ( $this_step_name or $existing_dependents or ($job_num >= scalar(@groupby_ids)) ); 
+                                   unless ( $this_step_name or $existing_dependents or ($job_num >= scalar(@$groupby_ids)) ); 
                              } 
                          }
                          #do something for once here
@@ -187,7 +188,7 @@ sub _add_dependents_for_step_via_placeholder {
              }else{                 
                  #$existing_dependents =  any { $_ eq "$job_num.$placeholder_step_name"  }  @$dependents;
                  #$this_step_name = 1 if( $placeholder_step_name eq $step_name);  
-                 if( defined $valid_steps_hash->{$placeholder_step_name}->{condition} ){                     
+                 if( defined ( $valid_steps_hash->{$placeholder_step_name}->{condition} ) ){                     
                      if( $valid_steps_hash->{$placeholder_step_name}->{condition} eq 'once'){
                           push( @$dependents, "$lowest_job_num.$placeholder_step_name")
                               unless ($this_step_name or $existing_dependents) ; 

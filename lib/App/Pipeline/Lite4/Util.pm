@@ -96,6 +96,7 @@ sub datasource_groupby {
 # the two column mergedin to a specific column
 # the exception is for grouptransby which will work with two columns in general I think.
 # for testing purposes we have this here.
+=cut
 sub datasource_groupby2 {
   my $self = shift;
   my $datasource_table  =shift;
@@ -120,6 +121,59 @@ sub datasource_groupby2 {
   }
   return \%group_hash; 
 }
+=cut
+sub datasource_groupby2 {
+  my $self = shift;
+  my $datasource_table  =shift;
+  my $groupby_field1 = shift;
+  my $groupby_field2 = shift;
+  my $grouphash_and_order_array = datasource_groupby2main($datasource_table,$groupby_field1,$groupby_field2);
+  return $grouphash_and_order_array->[0];
+}
+
+
+sub datasource_groupby2main {
+  #my $self = shift;
+  my $datasource_table  =shift;
+  my $groupby_field1 = shift;
+  my $groupby_field2 = shift;
+  my %group_hash; 
+  # create hash
+  my $next = $datasource_table->iterator();
+  my $i = 0;
+  my @group_array;
+  my @group_array_unique;
+  while( my $row = $next->() ){ 
+    #warn Dumper $row;
+    if( defined($groupby_field1) and defined( $groupby_field2 )){    
+        push( @{ $group_hash{$row->{$groupby_field1} .'-' . $row->{$groupby_field2} } } , $i );  
+        push( @group_array, $row->{$groupby_field1} .'-' . $row->{$groupby_field2});
+    }elsif( defined($groupby_field1 ) ){
+        push( @{ $group_hash{ $row->{$groupby_field1} } }, $i );   
+        push( @group_array, $row->{$groupby_field1} );
+    }else{
+        ouch "App_Pipeline_Lite4_Error","No groupby fields to group by";
+    }
+      
+    $i++;
+  }
+  @group_array_unique = uniq( @group_array);
+  return [ \%group_hash, \@group_array_unique]; 
+}
+
+
+# this gives back group ids in an ordering that
+# is ordered by first instance of group in the datasource
+sub datasource_groupby2_order {
+  my $self = shift;
+  my $datasource_table  =shift;
+  my $groupby_field1 = shift;
+  my $groupby_field2 = shift;
+  my $grouphash_and_order_array = datasource_groupby2main($datasource_table,$groupby_field1,$groupby_field2);
+  return $grouphash_and_order_array->[1];
+}
+
+ 
 
 sub datasource_groupby2_num_groups {
   my $self = shift;
