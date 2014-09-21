@@ -35,6 +35,7 @@ sub setup {
          run => "run pipeline",
          file => "get files",
          symlink => "symlink files",
+         version => "version"
       #   symlink2 => "symlink files"
          } );
 }
@@ -148,6 +149,22 @@ sub file {
      $c->getopt( keys %options );   
      App::Pipeline::Lite4::Command::file->new->execute($c->options, $c->argv);
 }
+
+sub version {
+     my $c = shift;
+     my $desc = 'version';
+     print "0.02\n";
+     #my %options = (
+     #'run_num|r=i'  => 'run_num',
+     #'stats|s'      => 'Show stats (size and mtime)',
+     #'step_name|t'     => 'Show step name in header',
+     #);
+     #return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;       
+     #$c->getopt( keys %options );   
+     #App::Pipeline::Lite4::Command::file->new->execute($c->options, $c->argv);
+     return;
+}
+
 
 sub symlink {
     my $c = shift;
