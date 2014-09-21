@@ -151,12 +151,13 @@ sub file {
 
 sub symlink {
     my $c = shift;
-    my $desc = 'symlink (creates dir of symlinks) [OPTIONS] PIPELINE';
+my $desc = "symlink (creates dir of symlinks) [OPTIONS] PIPELINE
+ Create symlinks with identifiers based on a datasource column (specified by --id_field)\n";
     my %options = (
            #'datasource|d=s' => 'Provides a path name to a datasource.',
           'run_num|r=i'  => 'run_num',
           'id_field|f=s'   => 'Field in the datasource that will be the file prefix',
-          'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME (required)',
+          'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME',
           #'path|p=s' => 'Path of symlink directory other than default, which will be created if it does not exist',
           'name|n=s' => 'Replaces filename with new name',
           'datasource|d=s' => 'Path to datasource file, if not given then datasource of the last run will be used'

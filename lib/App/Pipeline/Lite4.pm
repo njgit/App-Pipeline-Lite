@@ -42,6 +42,12 @@ sub symlink {
     #my $pipeline_file = shift;
     my $id_field = $opt->{id_field};
     
+    my $STEP_AND_FNAME = $opt->{step_and_fname}; 
+    
+    my ($STEP,$FNAME);
+    if( defined $STEP_AND_FNAME ){
+      ($STEP,$FNAME) = split '#', $STEP_AND_FNAME;
+    }
     
     my $parser = App::Pipeline::Lite4::Parser->new(
         pipeline_dir => $self->pipeline_dir,
@@ -78,6 +84,11 @@ sub symlink {
         my $job = $resolved_pipeline->{$job_num};         
         foreach my $step (keys %$job) {
             my $job_ids;   
+
+            if (defined ($STEP_AND_FNAME) ){
+               next unless $step eq $STEP;
+            }
+
             my $symlink_dir = path($resolver->symlink_dir, $step, $self->run_num);
             $symlink_dir->mkpath;
             my $condition = $job->{$step}->{condition};                   
@@ -91,6 +102,17 @@ sub symlink {
                # get the job ids  
                $job_ids = $self->_get_job_ids($id_field,$datasource,undef);
             }
+            
+            if( defined $STEP_AND_FNAME ){
+                my $file_path = path($output_run_dir,"job$job_num",$step,$FNAME);  
+                if( $file_path->exists ) {
+                    my $path_to_link = $file_path;
+                    $self->_symlink_paths($job_num, $path_to_link,$job_ids,$symlink_dir,$opt->{name});
+                }else{
+                    warn "path $file_path does not exist - SYMLINK NOT MADE";
+                }
+                next;
+            }
 
             my $outputfiles = $job->{$step}->{outputfiles};
             foreach my $outputfile ( @$outputfiles ){
@@ -99,34 +121,33 @@ sub symlink {
                # warn "LOOKING FOR $outputfile_path";          
                if( $outputfile_path->exists ) {
                #    warn "FOUND: ", $outputfile_path;
-                  my $symlink_path = path($symlink_dir,$job_ids->[$job_num]);
+                #  my $symlink_path = path($symlink_dir,$job_ids->[$job_num]);
                #    warn "SYMLINK $outputfile_path $symlink_path";
                   my $path_to_link = $outputfile_path;
                   $self->_symlink_paths($job_num, $path_to_link,$job_ids,$symlink_dir,$opt->{name});
-            }            
-         }
+               }            
+             }
          
-         my $placeholders= $job->{$step}->{placeholders};
-         foreach my $placeholder ( @$placeholders ){
-           my $path_to_link;
-           # warn "PLACEHOLDER: ", $placeholder,"\n";
-            my ($file ) = $placeholder =~ /$step\.(.+)/;
-            if( defined $file ){           
+            my $placeholders= $job->{$step}->{placeholders};
+            foreach my $placeholder ( @$placeholders ){
+                my $path_to_link;
+                # warn "PLACEHOLDER: ", $placeholder,"\n";
+                my ($file ) = $placeholder =~ /$step\.(.+)/;
+                if( defined $file ){           
             
-              my  $file_path = path($output_run_dir,"job$job_num",$step,$file);    
-              #  warn "Looking for $file in $file_path";        
-              if( $file_path->exists ) {
-              #      warn "FOUND: ", $file_path;     
-                  my $path_to_link = $file_path; 
-                  $self->_symlink_paths($job_num,$path_to_link,$job_ids,$symlink_dir,$opt->{name});        
-              }
-            }else{
-            #   warn "no file in $placeholder";
-            }
+                   my  $file_path = path($output_run_dir,"job$job_num",$step,$file);    
+                   #  warn "Looking for $file in $file_path";        
+                   if( $file_path->exists ) {
+                       #warn "FOUND: ", $file_path;     
+                       my $path_to_link = $file_path; 
+                       $self->_symlink_paths($job_num,$path_to_link,$job_ids,$symlink_dir,$opt->{name});        
+                   }
+                }else{
+                      #warn "no file in $placeholder";
+                }
          }
        }
     } 
-
 }
  
 sub _symlink_paths {
