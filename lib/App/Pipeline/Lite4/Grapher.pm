@@ -8,7 +8,7 @@ use Path::Tiny;
 use YAML::Any;
 #use List::AllUtils qw(min any); can't use as get kick ups about requiring versions > 1.32
 use List::Util qw(min reduce);
-use Array::Compare;
+use Data::Compare;
 use Data::Dumper;
 use App::Pipeline::Lite4::Util;
 extends 'App::Pipeline::Lite4::Base';
@@ -167,8 +167,8 @@ sub _add_dependents_for_step_via_placeholder {
                              # we can only refer to a groupby with the same condition  
                              # and then we only put in the job number, 
                              my $placeholder_step_params = $valid_steps_hash->{$placeholder_step_name}->{condition_params};
-                             my $comp = Array::Compare->new; 
-                             if( ! $comp->compare( $placeholder_step_params, $params  ) ){
+                             #my $comp = Array::Compare->new; 
+                             if( ! Compare( $placeholder_step_params, $params  ) ){
                                 ouch 'App_Pipeline4_Error', "One groupby statement depends on another groupby statement with a different groupby field(s)";
                              }else{
                                 
