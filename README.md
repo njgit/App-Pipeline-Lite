@@ -15,7 +15,7 @@ chmod 755 plite
 chmod 755 dispatch-basic
 ```
 
-Add the path to plite to your PATH 
+The best thing to do is to add plite to your PATH 
 
 Then run:
 
@@ -23,15 +23,15 @@ Then run:
 plite vsc --editor vim
 ```
 where vim could be replaced with your favourite editor. This will open a config file with one line, 
-showing you the current editor. 
+showing you the config file, which contains one setting - the config variable editor set to the current editor. 
 
-Add the following line
+Add the following line to set the dispatcher
 
 ```bash
 dispatcher=/path/to/dispatch-basic
 ```
 
-where /path/to is substituted with the actual path - then save.
+where /path/to is substituted with the actual path to dispatch-basic.
 
 
 Basic Usage
@@ -41,7 +41,7 @@ This following is a "hello world" for Pipelite.
 ```bash
 plite new filter-seq
 ```
- creates a new pipeline directory and a set of skeletonn files.
+ creates a new pipeline directory and a set of skeleton files.
 ```bash
 plite vp filter-seq
 ```
@@ -70,7 +70,7 @@ plite vg feature-seq
 ```
 
 If you don't want to actually dispatch the pipeline then you can
-use the -m switch
+use the -m switch (or --smoke-test)
 
 ```bash
 plite run -m filter-seq
@@ -93,10 +93,10 @@ to warn or allow the behaviour):
 
 Dispatchers
 ===========
-The dispatch-basic dispatcher is for demonstration and other dispatchers will be made available
- and does not offer parallelisation over cores, 
-just ensuring jobs with dependencies are executed in the right order. This is on the todo list.
+The dispatch-basic dispatcher is mainly for demonstration and does not offer parallelisation.
+A dispatcher for Platform LSF wil be added soon (contact me if you want to use this right
+away) and other dispatchers targeted to other job management systems are on the todo.
 
-We have in use a dispatcher for Platform LSF that will be made available soon - contact 
-me if you wish to use this right away. We will look to add dispatchers that utilise other
-job management/schedule systems in the future.
+Further Documentation
+=====================
+This will be added soon, along with some typical bioinformatic pipeline examples.
