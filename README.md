@@ -23,7 +23,7 @@ Then run:
 plite vsc --editor vim
 ```
 where vim could be replaced with your favourite editor. This will open a config file with one line, 
-showing you the config file, which contains one setting - the config variable editor set to the current editor. 
+showing you the config file, which contains one setting - the config variable "editor" set to the current editor. 
 
 Add the following line to set the dispatcher
 
@@ -38,32 +38,29 @@ Basic Usage
 ===========
 This following is a "hello world" for Pipelite.
 
+Creates a new pipeline directory and a set of skeleton files.
 ```bash
 plite new filter-seq
 ```
- creates a new pipeline directory and a set of skeleton files.
+ views the default pipeline file located in filter-seq/filter-seq.pipeline
 ```bash
 plite vp filter-seq
 ```
- views the pipeline file located in filter-seq/filter-seq.pipeline
+ take a look at the datasource for the pipeline
 ```bash
 less filter-seq/filter-seq.datasource
 ```
- take a look at the datasource for the pipeline
+  run the single step pipeline over the datasource
 ```bash
 plite run filter-seq
 ```
-  run the single step pipeline over the datasource
+  symlink recognisable identifiers to the pipeline files
 ```bash
 plite symlink -f name filter-seq
-```
-  symlink recognisable identifiers to the pipeline files
-
-```
 ls filter-seq/symlink/seq/1/
 ```
 
-You can view the raw "command" file using 
+Check the raw "command" file using 
 
 ```bash
 plite vg feature-seq
@@ -76,7 +73,7 @@ use the -m switch (or --smoke-test)
 plite run -m filter-seq
 ```
 
-This still produces the raw "command file" that allows you to inspect what will be run
+This still produces the raw "command file" that allows you to inspect what will be run.
 
 
 Pipeline and Datasource Specification
