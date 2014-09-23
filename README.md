@@ -54,6 +54,35 @@ less filter-seq/filter-seq.datasource
 ```bash
 plite run filter-seq
 ```
+Take a look at the output files
+```
+tree feature-seq/output
+feature-seq/output
+└── run1
+    ├── job0
+    │   └── seq
+    │       ├── err
+    │       └── filterseq.txt
+    ├── job1
+    │   └── seq
+    │       ├── err
+    │       └── filterseq.txt
+    ├── job2
+    │   └── seq
+    │       ├── err
+    │       └── filterseq.txt
+    ├── job3
+    │   └── seq
+    │       ├── err
+    │       └── filterseq.txt
+    └── settings
+        └── 1
+            ├── feature-seq.datasource
+            ├── feature-seq.graph.yaml
+            └── feature-seq.pipeline
+```
+
+
   symlink recognisable identifiers to the pipeline files
 ```bash
 plite symlink -f name filter-seq
