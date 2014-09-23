@@ -25,14 +25,32 @@ This will open a config file with one line, showing you the current editor. Add 
 
 dispatcher=/path/to/dispatch-basic
 
-where /path/to is substituted with the actual path.
+where /path/to is substituted with the actual path - then save.
+
 
 Basic Usage
 ===========
 This following is a "hello world" for Pipelite.
 
+plite new filter-seq
 
+ creates a new pipeline directory and a set of skeletonn files.
 
+plite vp filter-seq
+
+ views the pipeline file located in filter-seq/filter-seq.pipeline
+
+less filter-seq/filter-seq.datasource
+
+ take a look at the datasource for the pipeline
+
+plite run filter-seq
+
+  run the single step pipeline over the datasource
+
+plite symlink ...
+
+  symlink recognisable identifiers to the pipeline files
 
 Pipeline and Datasource Specification
 =====================================
