@@ -5,20 +5,34 @@ Pipelite is still in an experimental phase - Pre Alpha would be the best descrip
 
 Installation
 ============
-curl -L https://github.com/njgit/App-Pipeline-Lite/blob/master/bin/packed/plite > ~/bin/plite
-curl -L https://github.com/njgit/App-Pipeline-Lite/blob/master/bin/packed/dispatch-basic > ~/bin/dispatch-basic
+Download the Pipelite executable - "plite" and an associated dispatcher
 
-plite vsc
+wget -O plite https://github.com/njgit/App-Pipeline-Lite/blob/doc-feature/bin/packed/plite?raw=true
+wget -O dispatch-basic https://raw.githubusercontent.com/njgit/App-Pipeline-Lite/master/bin/packed/dispatch-basic
 
-Enter your favourite editor
-set 
- dispatcher=~/bin/dispatch-basic
+chmod 755 plite
+chmod 755 dispatch-basic
+
+It would be useful if plite were added to your PATH 
+
+Then run:
+ 
+plite vsc --editor vim
+
+where vim could be replaced with your favourite editor
+
+This will open a config file with one line, showing you the current editor. Add the following line
+
+dispatcher=/path/to/dispatch-basic
+
+where /path/to is substituted with the actual path.
 
 Basic Usage
 ===========
-This gives the basic way Pipelite works.
+This following is a "hello world" for Pipelite.
 
-The executable is "plite"
+
+
 
 Pipeline and Datasource Specification
 =====================================
