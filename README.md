@@ -7,11 +7,13 @@ Installation
 ============
 Download the Pipelite executable - "plite" and an associated dispatcher
 
+```bash
 wget -O plite https://github.com/njgit/App-Pipeline-Lite/blob/doc-feature/bin/packed/plite?raw=true
 wget -O dispatch-basic https://raw.githubusercontent.com/njgit/App-Pipeline-Lite/master/bin/packed/dispatch-basic
 
 chmod 755 plite
 chmod 755 dispatch-basic
+```
 
 It would be useful if plite were added to your PATH 
 
