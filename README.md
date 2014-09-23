@@ -56,7 +56,7 @@ plite run filter-seq
 ```
 Take a look at the output files
 ```
-tree feature-seq/output
+tree filter-seq/output
 feature-seq/output
 └── run1
     ├── job0
