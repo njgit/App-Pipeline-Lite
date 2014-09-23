@@ -22,7 +22,7 @@ Then run:
 ```bash 
 plite vsc --editor vim
 ```
-where vim could be replaced with your favourite editor. This will open a config file with one line, 
+where "vim" could be replaced with your favourite editor. This will open a config file with one line, 
 showing you the config file, which contains one setting - the config variable "editor" set to the current editor. 
 
 Add the following line to set the dispatcher
