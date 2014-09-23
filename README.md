@@ -36,7 +36,7 @@ where /path/to is substituted with the actual path to dispatch-basic.
 
 Basic Usage
 ===========
-This following is a "hello world" for Pipelite.
+The following is a "hello world" for Pipelite.
 
 Creates a new pipeline directory and a set of skeleton files.
 ```bash
