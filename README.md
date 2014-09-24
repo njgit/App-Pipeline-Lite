@@ -61,7 +61,7 @@ plite new filter-seq
 ```bash
 plite vp filter-seq
 ```
- Take a look at the "datasource" for the pipeline. 
+ Take a look at the "datasource" for the pipeline - corresponding to the table above.  
 
 ```bash
 less filter-seq/filter-seq.datasource
