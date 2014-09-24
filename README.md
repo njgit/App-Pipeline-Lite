@@ -5,7 +5,7 @@ Pipelite is still in an experimental phase - Pre Alpha would be the best descrip
 
 Installation
 ============
-Download the Pipelite executable - **plite** and an associated dispatcher **dispatch-basic**
+Download the Pipelite executable - **plite**, and an associated dispatcher - **dispatch-basic**
 
 ```bash
 wget -O plite https://github.com/njgit/App-Pipeline-Lite/blob/doc-feature/bin/packed/plite?raw=true
