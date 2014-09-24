@@ -61,6 +61,14 @@ plite new filter-seq
 ```bash
 plite vp filter-seq
 ```
+This consists of one line, showing how the command has been made into a "template"
+that can be run over each row of the datasource. A step starts with the name of the step
+followed by a dot.
+
+```bash
+seq. seq [% datasource.N %] | grep -v ‘[% datasource.filter %]’ > [% seq.filterseq.txt %]
+``` 
+
  Take a look at the "datasource" for the pipeline - corresponding to the table above.  
 
 ```bash
