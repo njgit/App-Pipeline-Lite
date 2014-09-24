@@ -105,7 +105,7 @@ Check the raw "command" file using
 plite vg feature-seq
 ```
 
-If you don't want to actually dispatch the pipeline then you can
+If you don't want to actually dispatch(execute the commands) the pipeline, then
 use the -m switch (or --smoke-test)
 
 ```bash
@@ -118,9 +118,9 @@ This still produces the raw "command file" that allows you to inspect what will 
 Pipeline and Datasource Specification
 =====================================
 
-This a list of thing that currently will not be warned against but which will result 
-in strange behaviour (they will be removed from the list as updates are made 
-to warn or allow the behaviour):
+This is a list of things that currently will not be warned against, but which will result 
+in strange behaviour (they will be removed from the list as updates are made to warn or 
+allow the behaviour):
 
 * No dots in datasource names - underscores and hyphens are ok 
   (i.e. no column name "file.gz", use "file-gz" instead)
@@ -131,7 +131,7 @@ Dispatchers
 ===========
 The dispatch-basic dispatcher is mainly for demonstration and does not offer parallelisation.
 A dispatcher for Platform LSF wil be added soon (contact me if you want to use this right
-away) and other dispatchers targeted to other job management systems are on the todo.
+away) and other dispatchers targeted to various job management systems are on the todo.
 
 Further Documentation
 =====================
