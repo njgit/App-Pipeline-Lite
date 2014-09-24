@@ -57,7 +57,7 @@ plite run filter-seq
 Take a look at the output files
 ```
 tree filter-seq/output
-feature-seq/output
+filter-seq/output
 └── run1
     ├── job0
     │   └── seq
@@ -77,16 +77,26 @@ feature-seq/output
     │       └── filterseq.txt
     └── settings
         └── 1
-            ├── feature-seq.datasource
-            ├── feature-seq.graph.yaml
-            └── feature-seq.pipeline
+            ├── filter-seq.datasource
+            ├── filter-seq.graph.yaml
+            └── filter-seq.pipeline
+
 ```
-
-
   symlink recognisable identifiers to the pipeline files
 ```bash
 plite symlink -f name filter-seq
-ls filter-seq/symlink/seq/1/
+tree filter-seq/symlink/
+filter-seq/symlink/
+└── seq
+    └── 1
+        ├── james-err -> /filter-seq/output/run1/job0/seq/err
+        ├── james-filterseq.txt -> /filter-seq/output/run1/job0/seq/filterseq.txt
+        ├── nozomi-err -> /filter-seq/output/run1/job1/seq/err
+        ├── nozomi-filterseq.txt -> /filter-seq/output/run1/job1/seq/filterseq.txt
+        ├── ryan-err -> /filter-seq/output/run1/job2/seq/err
+        ├── ryan-filterseq.txt -> /filter-seq/output/run1/job2/seq/filterseq.txt
+        ├── tiffiny-err -> /filter-seq/output/run1/job3/seq/err
+        └── tiffiny-filterseq.txt -> /filter-seq/output/run1/job3/seq/filterseq.txt
 ```
 
 Check the raw "command" file using 
