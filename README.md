@@ -53,10 +53,10 @@ a table
 
 |N     | filter | group|   name
 |------|--------|------|-----------
-|12    |  5\|6   |  A   |    james
-|15    |  7\|8   |  B   |    nozomi
-|16    |  9\|10  |  A   |    ryan
-|20    |  12\|13 |  B   |    tiffiny
+|12    |  5&#124;6   |  A   |    james
+|15    |  7&#124;8   |  B   |    nozomi
+|16    |  9&#124;10  |  A   |    ryan
+|20    |  12&#124;13 |  B   |    tiffiny
 
 Creates a new pipeline directory and a set of skeleton files.
 ```bash
