@@ -43,13 +43,8 @@ Lets say you have a command that prints a sequence of numbers, filters some out 
 seq 10 | grep -v '5|6' > filterseq.txt  
 ```
 
-And you want to seq for different values, and you want to filter on different numbers - as listed in 
+And you want to seq for **N** different values, and **filter** on different numbers - as listed in 
 a table 
-| N        | Are           | Cool  |
-| ------------- |:-------------:| -----:|
-| col 3 is      | right-aligned | $1600 |
-| col 2 is      | centered      |   $12 |
-| zebra stripes | are neat      |    $1 |
 
 |N     | filter | group|   name
 |------|--------|------|-----------
