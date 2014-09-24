@@ -15,7 +15,7 @@ chmod 755 plite
 chmod 755 dispatch-basic
 ```
 
-The best thing to do is to add plite to your PATH in someway - e.g move "plite" to a bin directory.
+The best thing to do is to add plite to your PATH in someway - e.g move **plite** to a bin directory.
 
 Then run:
 
