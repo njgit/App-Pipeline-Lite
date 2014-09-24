@@ -53,24 +53,24 @@ a table
 |16    |  9&#124;10  |  A   |    ryan
 |20    |  12&#124;13 |  B   |    tiffiny
 
-Creates a new pipeline directory and a set of skeleton files.
+Create a new pipeline directory and a set of skeleton files.
 ```bash
 plite new filter-seq
 ```
- views the default pipeline file located in filter-seq/filter-seq.pipeline
+ View the default pipeline file located in filter-seq/filter-seq.pipeline.
 ```bash
 plite vp filter-seq
 ```
- take a look at the "datasource" for the pipeline. 
+ Take a look at the "datasource" for the pipeline. 
 
 ```bash
 less filter-seq/filter-seq.datasource
 ```
-  run the single step pipeline over the datasource
+  Run the single step pipeline over the datasource.
 ```bash
 plite run filter-seq
 ```
-Take a look at the output files
+Take a look at the output files.
 ```
 tree filter-seq/output
 filter-seq/output
@@ -98,7 +98,7 @@ filter-seq/output
             └── filter-seq.pipeline
 
 ```
-  symlink recognisable identifiers from the datasource to the pipeline files
+  Symlink recognisable identifiers from the datasource to the pipeline files.
 ```bash
 plite symlink -f name filter-seq
 tree filter-seq/symlink/
@@ -115,13 +115,13 @@ filter-seq/symlink/
         └── tiffiny-filterseq.txt -> /filter-seq/output/run1/job3/seq/filterseq.txt
 ```
 
-Check the raw "command" file using 
+Check the raw "command" file using.
 
 ```bash
 plite vg feature-seq
 ```
 
-If you don't want to actually dispatch(execute the commands) the pipeline, then
+If you don't want to actually dispatch the pipeline(execute the commands), then
 use the -m switch (or --smoke-test)
 
 ```bash
