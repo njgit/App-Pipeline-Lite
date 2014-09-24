@@ -37,6 +37,26 @@ where /path/to is substituted with the actual path to dispatch-basic.
 Basic Usage
 ===========
 The following is a "hello world" for Pipelite.
+Lets say you have a command that prints a sequence of numbers, filters some out and writes to a file:
+
+```
+seq 10 | grep -v '5|6' > filterseq.txt  
+```
+
+And you want to seq for different values, and you want to filter on different numbers - as listed in 
+a table 
+| N        | Are           | Cool  |
+| ------------- |:-------------:| -----:|
+| col 3 is      | right-aligned | $1600 |
+| col 2 is      | centered      |   $12 |
+| zebra stripes | are neat      |    $1 |
+
+|N     | filter | group|   name
+|------|--------|------|-----------
+|12    |  5|6   |  A   |    james
+|15    |  7|8   |  B   |    nozomi
+|16    |  9|10  |  A   |    ryan
+|20    |  12|13 |  B   |    tiffiny
 
 Creates a new pipeline directory and a set of skeleton files.
 ```bash
@@ -46,7 +66,8 @@ plite new filter-seq
 ```bash
 plite vp filter-seq
 ```
- take a look at the datasource for the pipeline
+ take a look at the "datasource" for the pipeline. 
+
 ```bash
 less filter-seq/filter-seq.datasource
 ```
@@ -82,7 +103,7 @@ filter-seq/output
             └── filter-seq.pipeline
 
 ```
-  symlink recognisable identifiers to the pipeline files
+  symlink recognisable identifiers from the datasource to the pipeline files
 ```bash
 plite symlink -f name filter-seq
 tree filter-seq/symlink/
