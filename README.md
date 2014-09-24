@@ -78,7 +78,7 @@ less filter-seq/filter-seq.datasource
 ```bash
 plite run filter-seq
 ```
-Take a look at the output files.
+Check the output files.
 ```
 tree filter-seq/output
 filter-seq/output
