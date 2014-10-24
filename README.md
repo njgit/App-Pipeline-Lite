@@ -1,7 +1,8 @@
 Pipelite (App-Pipeline-Lite)
 =================
 
-Pipelite is still in an experimental phase - Pre Alpha would be the best description.
+Pipelite is a lightweight workflow system developed in a bioinformatics context. Pipelite is still in an 
+experimental phase - Pre Alpha would be the best description.
 
 Installation
 ============
@@ -15,7 +16,7 @@ chmod 755 plite
 chmod 755 dispatch-basic
 ```
 
-The best thing to do is to add plite to your PATH in someway - e.g move **plite** to a bin directory.
+The best thing to do is to add **plite** to your PATH in someway - e.g move **plite** to a bin directory.
 
 Then run:
 
