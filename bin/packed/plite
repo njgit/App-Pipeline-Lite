@@ -837,10 +837,10 @@ $fatpacked{"App/Pipeline/Lite4/Command/run.pm"} = '#line '.(1+__LINE__).' "'.__F
              $App_Pipeline_Lite->job_filter_str( $opt->{jobs} );
           }
           
-          if(defined $opt->{run}){
+          if(defined $opt->{run_num}){
                  
-           $App_Pipeline_Lite->run_num($opt->{run});
-           my $datasource_path = $App_Pipeline_Lite->datasource_from_run($opt->{run});
+           $App_Pipeline_Lite->run_num($opt->{run_num});
+           my $datasource_path = $App_Pipeline_Lite->datasource_from_run($opt->{run_num});
            $App_Pipeline_Lite->datasource_file($datasource_path);
            
            # $App_Pipeline_Lite->datasource_file
@@ -862,7 +862,7 @@ $fatpacked{"App/Pipeline/Lite4/Command/run.pm"} = '#line '.(1+__LINE__).' "'.__F
         my $step_filter = $opt->{steps} // "*";
         my $job_filter  = $opt->{jobs} // "*"; 
         my $run_num =  $App_Pipeline_Lite->last_run_num + 1; 
-        $run_num = $opt->{run} if defined($opt->{run});    
+        $run_num = $opt->{run_num} if defined($opt->{run_num});    
         my $run_info = join " ", "run" . "[ $run_num ]", "[ step-filter: " . $step_filter  . " ]", "[ job-filter: " . $job_filter . " ]";
                   
         $App_Pipeline_Lite->util->append_description( $run_info, $desc );   
@@ -1071,8 +1071,8 @@ $fatpacked{"App/Pipeline/Lite4/Command/symlink2.pm"} = '#line '.(1+__LINE__).' "
           my $pipeline_dir =   path($args->[0]);
           my $App_Pipeline_Lite = App::Pipeline::Lite4->new( pipeline_dir => $args->[0]);      
           my $run_num = $App_Pipeline_Lite->last_run_num;
-          if(defined $opt->{run}){     
-             $run_num = $opt->{run};
+          if(defined $opt->{run_num}){     
+             $run_num = $opt->{run_num};
           }
           $App_Pipeline_Lite->run_num($run_num);
           my $datasource_path = $App_Pipeline_Lite->datasource_from_run($run_num);
@@ -48570,7 +48570,7 @@ sub run {
      my %options = (
          'datasource|d=s' => 'Provides a path name to a datasource.',
          'smoke_test|m'   => 'Runs pipeline with out dispatching jobs',
-         'run|r=i'        => 'Run on this run number',
+         'run_num|r=i'    => 'Run on this run number',
          'steps|s=s'      => 'Run only these steps',
          'jobs|j=s'       => "Only run these jobs. Corresponds to rows in datasource. e.g --jobs '1,5,7-21' . Starts from job 0"
          # IN ORDER OF USEFULNESS: 

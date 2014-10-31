@@ -15,8 +15,8 @@ sub execute {
         my $pipeline_dir =   path($args->[0]);
         my $App_Pipeline_Lite = App::Pipeline::Lite4->new( pipeline_dir => $args->[0]);      
         my $run_num = $App_Pipeline_Lite->last_run_num;
-        if(defined $opt->{run}){     
-           $run_num = $opt->{run};
+        if(defined $opt->{run_num}){     
+           $run_num = $opt->{run_num};
         }
         $App_Pipeline_Lite->run_num($run_num);
         my $datasource_path = $App_Pipeline_Lite->datasource_from_run($run_num);
