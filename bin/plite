@@ -122,7 +122,7 @@ sub run {
      my %options = (
          'datasource|d=s' => 'Provides a path name to a datasource.',
          'smoke_test|m'   => 'Runs pipeline with out dispatching jobs',
-         'run|r=i'        => 'Run on this run number',
+         'run_num|r=i'    => 'Run on this run number',
          'steps|s=s'      => 'Run only these steps',
          'jobs|j=s'       => "Only run these jobs. Corresponds to rows in datasource. e.g --jobs '1,5,7-21' . Starts from job 0"
          # IN ORDER OF USEFULNESS: 

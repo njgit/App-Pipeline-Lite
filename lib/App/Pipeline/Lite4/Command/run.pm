@@ -22,10 +22,10 @@ sub execute {
            $App_Pipeline_Lite->job_filter_str( $opt->{jobs} );
         }
         
-        if(defined $opt->{run}){
+        if(defined $opt->{run_num}){
                
-         $App_Pipeline_Lite->run_num($opt->{run});
-         my $datasource_path = $App_Pipeline_Lite->datasource_from_run($opt->{run});
+         $App_Pipeline_Lite->run_num($opt->{run_num});
+         my $datasource_path = $App_Pipeline_Lite->datasource_from_run($opt->{run_num});
          $App_Pipeline_Lite->datasource_file($datasource_path);
          
          # $App_Pipeline_Lite->datasource_file
@@ -47,7 +47,7 @@ sub execute {
       my $step_filter = $opt->{steps} // "*";
       my $job_filter  = $opt->{jobs} // "*"; 
       my $run_num =  $App_Pipeline_Lite->last_run_num + 1; 
-      $run_num = $opt->{run} if defined($opt->{run});    
+      $run_num = $opt->{run_num} if defined($opt->{run_num});    
       my $run_info = join " ", "run" . "[ $run_num ]", "[ step-filter: " . $step_filter  . " ]", "[ job-filter: " . $job_filter . " ]";
                 
       $App_Pipeline_Lite->util->append_description( $run_info, $desc );   
