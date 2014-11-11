@@ -1,37 +1,27 @@
 #!/usr/bin/env perl
 #===============================================================================
 #
-#					FILE: lsf_job_manager.pl
+#	FILE: lsf_job_manager.pl
 #
-#				 USAGE: ./lsf_job_manager.pl
+#	USAGE: ./lsf_job_manager.pl
 #
-#	 DESCRIPTION:
+#	DESCRIPTION:
 #
-#			 OPTIONS: ---
-# REQUIREMENTS: ---
-#					BUGS: ---
-#				 NOTES: ---
-#				AUTHOR: NJWALKER (), nw11@sanger.ac.uk modified RJGUNNING, rg12@sanger.ac.uk
-#			 COMPANY:
-#			 VERSION: 1.0
-#			 CREATED: 24/02/13 12:05:44
-#			REVISION: ---
+#	OPTIONS: ---
+# 	REQUIREMENTS: Path::Tiny, Graph, YAML::Any
+#	BUGS: ---
+#	NOTES: ---
+#	AUTHOR: NJWALKER (), nw11@sanger.ac.uk modified RJGUNNING, rg12@sanger.ac.uk
+#	COMPANY:
+#	VERSION: 1.0
+#	CREATED: 24/02/13 12:05:44
+#	REVISION: 11/11/2014 19:40:00
 #===============================================================================
 
 use Modern::Perl;
 use YAML::Any;
 use Graph;
 use Path::Tiny;
-use Data::Dumper;
-
-
-#use Graph::Easy;
-#use Graph;
-#use Graph::Convert;
-#use Path::Class qw(dir file);
-#use LSF RaiseError => 0, PrintError => 1, PrintOutput => 0;
-#use LSF::Job;
-#use autobox::Core;
 
 # BASIC BLOCKING DISPATCHER
 #
