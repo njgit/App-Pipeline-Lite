@@ -184,7 +184,7 @@ This is only required if files are not specifically name in step.
 e.g.
 ```bash
 createfile. touch outfile1 outfile2
-createfile.output outfile outfile2
+createfile.output outfile1 outfile2
 ```
 now outfile1 and oufile2 can be called as `[% createfile.output1 %]` and `[% createfile.output2 %]` respectively
 
