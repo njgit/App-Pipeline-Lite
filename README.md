@@ -163,6 +163,12 @@ Further Documentation
 
 pipeline commands
 -----------------
+### Cores
+Declare how many cores the step requires in step meta, i.e. `stepname.cores 6`
+
+### Memory
+Declare how much memory (mB) the step requires in step meta, i.e. `stepname.mem 10000`
+
 ### Once
 Declare in step definition, i.e. `stepname.once`
 This step is only performed for Job 0 or first job if a range is specified.
