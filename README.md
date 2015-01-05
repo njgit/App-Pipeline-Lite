@@ -191,7 +191,7 @@ now outfile1 and oufile2 can be called as `[% createfile.output1 %]` and `[% cre
 ### Group.by
 Declare in step definition, i.e. `stepname.groupby.Column`
 
-to use `[% groupby.Column.stepname.file %}`
+to use `[% groupby.Column.stepname.file %]`
 
 
 
