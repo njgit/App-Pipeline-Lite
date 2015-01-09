@@ -188,12 +188,17 @@ createfile.output outfile1 outfile2
 ```
 now outfile1 and oufile2 can be called as `[% createfile.output1 %]` and `[% createfile.output2 %]` respectively
 
-### Group.by
+### Groupby
 Declare in step definition, i.e. `stepname.groupby.Column`
 
 to use `[% groupby.Column.stepname.file %]`
 
+###jobs
+The `jobs` command is used within a placeholder to list a file/paramater for all jobs in a run.
 
+e.g.
+```bash
+[% jobs.createfile.output1 %]
+```
 
-
-This will be added soon, along with some typical bioinformatic pipeline examples.
+will list the all output1 files created by the createfile step for all jobs in the run.
