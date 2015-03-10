@@ -18,9 +18,12 @@ sub execute {
         if(defined $opt->{run_num}){     
            $run_num = $opt->{run_num};
         }
-        $App_Pipeline_Lite->run_num($run_num);
+        $App_Pipeline_Lite->run_num($run_num);        
         my $datasource_path = $App_Pipeline_Lite->datasource_from_run($run_num);
         $App_Pipeline_Lite->datasource_file($datasource_path);
+        if(defined $opt->{datasource} ){
+            $App_Pipeline_Lite->datasource_file($opt->{datasource});
+        }
         $App_Pipeline_Lite->symlink($opt);       
      };
      
