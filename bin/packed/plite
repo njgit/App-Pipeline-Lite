@@ -71,7 +71,8 @@ $fatpacked{"App/Pipeline/Lite4.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
       my $resolver = App::Pipeline::Lite4::Resolver->new (                      
                          pipeline_dir         => $self->pipeline_dir,
                          #datasource_file     => $self->datasource_resolved_file,
-                         datasource_file      => $self->datasource_file,
+                         #datasource_file      => defined( $opt->{datasource} ) ? $opt->{datasource} : $self->datasource_file,
+                         datasource_file     => $self->datasource_file,
                          current_run_num      => defined( $self->run_num ) ? $self->run_num : undef,
                          step_filter_str      => defined( $self->step_filter_str) ? $self->step_filter_str : undef,
                          job_filter_str       => defined( $self->job_filter_str) ? $self->job_filter_str : undef,
@@ -267,7 +268,6 @@ $fatpacked{"App/Pipeline/Lite4.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
        $self->logger->debug("Smoke Test!");    
      }
      
-  
   }
   
   sub external_dispatch {
@@ -1074,9 +1074,12 @@ $fatpacked{"App/Pipeline/Lite4/Command/symlink2.pm"} = '#line '.(1+__LINE__).' "
           if(defined $opt->{run_num}){     
              $run_num = $opt->{run_num};
           }
-          $App_Pipeline_Lite->run_num($run_num);
+          $App_Pipeline_Lite->run_num($run_num);        
           my $datasource_path = $App_Pipeline_Lite->datasource_from_run($run_num);
           $App_Pipeline_Lite->datasource_file($datasource_path);
+          if(defined $opt->{datasource} ){
+              $App_Pipeline_Lite->datasource_file($opt->{datasource});
+          }
           $App_Pipeline_Lite->symlink($opt);       
        };
        
