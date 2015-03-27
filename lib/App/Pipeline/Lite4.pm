@@ -63,7 +63,8 @@ sub symlink {
     my $resolver = App::Pipeline::Lite4::Resolver->new (                      
                        pipeline_dir         => $self->pipeline_dir,
                        #datasource_file     => $self->datasource_resolved_file,
-                       datasource_file      => $self->datasource_file,
+                       #datasource_file      => defined( $opt->{datasource} ) ? $opt->{datasource} : $self->datasource_file,
+                       datasource_file     => $self->datasource_file,
                        current_run_num      => defined( $self->run_num ) ? $self->run_num : undef,
                        step_filter_str      => defined( $self->step_filter_str) ? $self->step_filter_str : undef,
                        job_filter_str       => defined( $self->job_filter_str) ? $self->job_filter_str : undef,
@@ -259,7 +260,6 @@ sub run_pipeline {
      $self->logger->debug("Smoke Test!");    
    }
    
-
 }
 
 sub external_dispatch {
