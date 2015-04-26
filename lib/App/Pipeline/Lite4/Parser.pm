@@ -13,7 +13,7 @@ extends 'App::Pipeline::Lite4::Base';
 has append_err_str => ( isa => 'Bool' , is => 'rw', default => sub { 1;} );
 has prepend_cwd_str => ( isa => 'Bool' , is => 'rw', default => sub { 1;} );
 
-#has append => (isa => 'Str', is =>'rw', default=> sub {''} );
+#has append  => (isa => 'Str', is =>'rw', default=> sub {''} );
 #has prepend =>  (isa => 'Str', is =>'rw', default=> sub {''} );
 
 has append => (isa => 'Str|Undef', is =>'rw', lazy_build => 1 );
@@ -161,44 +161,48 @@ sub concat_to_cmd {
    return $step_hash;
 }
 
+
 =func parse_pipeline_file_to_step_hash
   A step hash has a key such as "1." and value "some_cmd -h MOREOPTIONS ARGS ..."
 =cut
 sub parse_pipeline_to_step_hash   {
     # TYPE:  Path::Tiny $file
     my $file = shift;
-    # Each Step Starts with X. or X.output and then a space, where X is the step number
+    # Each Step Starts with X. or X.[condition], then a space, where X is the step name
     # Can be multiline but cannot start with X. on a line
     my @pipeline_file_contents = $file->lines;
     my %stephash;
     my $stepname;
-    foreach my $line (@pipeline_file_contents) {  
+    my $not_started=1;
+    foreach my $line (@pipeline_file_contents) {        
+        if ( $not_started && $line =~ /^\s+$/){next;} #allow blank lines at top of pipeline description
+        if ( $line =~ /^#/){ next; }  
+        my $C = qr{^[\w\-]+\.};
+        my $D = qr{^[\w\-]+\.output};
+        my $E = qr{^[\w\-]+\.once};
+        my $F = qr{^[\w\-]+\.mem};       
+        my $G = qr{^[\w\-]+\.after};
+        my $H = qr{^[\w\-]+\.queue};
+        my $I = qr{^[\w\-]+\.cores};
+        my $J = qr{^[\w\-]+\.groupby\.[\w\-]+};
+        my $K = qr{^[\w\-]+\.groupby\.[\w\-]+\.[\w\-]+};
+            
+        my $N = qr{\s(.+)};
+        my $rg = qr{        
+            ($C|$D|$E|$F|$G|$H|$I|$J|$K)$N      
+        }x;
        
-       if ( $line =~ /^#/){ next; }  
-       my $C = qr{^[\w\-]+\.};
-       my $D = qr{^[\w\-]+\.output};
-       my $E = qr{^[\w\-]+\.once};
-       my $F = qr{^[\w\-]+\.mem};       
-       my $G = qr{^[\w\-]+\.after};
-       my $H = qr{^[\w\-]+\.queue};
-       my $I = qr{^[\w\-]+\.cores};
-       my $J = qr{^[\w\-]+\.groupby\.[\w\-]+};
-       my $K = qr{^[\w\-]+\.groupby\.[\w\-]+\.[\w\-]+};
-       #my $L = qr{^[\w\-]+\.grouptransby\.[\w\-]};
-       #my $M = qr{^[\w\-]+\.grouptransby\.[\w\-]\.[\w\-]};
-
-       # #my $G = qr{^[0-9]+\.skip_if_exists}
-       # #my $E = qr{^[0-9]+\.no_err};
-       
-       my $N = qr{\s(.+)};
-       my $rg = qr{        
-           ($C|$D|$E|$F|$G|$H|$I|$J|$K)$N      
-       }x;
-       
-        if( $line =~ $rg) {          
+        if( $line =~ $rg) {
+            $not_started = 0;          
             $stepname = $1;            
             my $steptext = $2;
-            $stephash{$stepname} = $steptext;
+            $stephash{$stepname}  = $steptext;            
+        }elsif($line =~ /($C)\s+/){ # step has white space after it
+            $not_started = 0;
+            $stepname = $1;
+            $stephash{$stepname} = ""
+        }elsif($line =~ /$C/){    # if the line matches as the first part of a step, yet is not a fully valid step then there is a misspelling or invalidity
+            ouch 'App_Pipeline_Lite4_Error', "This step does not have a valid condition (is it misspelt?)\n ==> $line";
         }else{
             $stephash{$stepname} .= $line; 
         }    
