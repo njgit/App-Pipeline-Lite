@@ -122,7 +122,7 @@ sub symlink {
                # warn "LOOKING FOR $outputfile_path";          
                if( $outputfile_path->exists ) {
                #    warn "FOUND: ", $outputfile_path;
-                #  my $symlink_path = path($symlink_dir,$job_ids->[$job_num]);
+               #    my $symlink_path = path($symlink_dir,$job_ids->[$job_num]);
                #    warn "SYMLINK $outputfile_path $symlink_path";
                   my $path_to_link = $outputfile_path;
                   $self->_symlink_paths($job_num, $path_to_link,$job_ids,$symlink_dir,$opt->{name});
@@ -148,7 +148,9 @@ sub symlink {
                 }
          }
        }
-    } 
+    }
+    
+    
 }
  
 sub _symlink_paths {
