@@ -177,7 +177,7 @@ $fatpacked{"App/Pipeline/Lite4.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
                 }     
                my $symlink_path = path($symlink_dir,$new_basename);        
                #my $symlink_path = path($symlink_dir,$job_ids->[$job_num],$file_path);
-               warn " SYMLINK $path_to_link $symlink_path";    
+               print STDERR " SYMLINK $path_to_link $symlink_path\n";    
                CORE::symlink $path_to_link, $symlink_path;       
            }  
   } 
@@ -1786,8 +1786,12 @@ $fatpacked{"App/Pipeline/Lite4/Parser.pm"} = '#line '.(1+__LINE__).' "'.__FILE__
           my $K = qr{^[\w\-]+\.groupby\.[\w\-]+\.[\w\-]+};
               
           my $N = qr{\s(.+)};
+          my $O = qr{\s+};
           my $rg = qr{        
               ($C|$D|$E|$F|$G|$H|$I|$J|$K)$N      
+          }x;
+          my $rg_whitespace = qr{        
+              ($C|$D|$E|$F|$G|$H|$I|$J|$K)$O      
           }x;
          
           if( $line =~ $rg) {
@@ -1795,7 +1799,7 @@ $fatpacked{"App/Pipeline/Lite4/Parser.pm"} = '#line '.(1+__LINE__).' "'.__FILE__
               $stepname = $1;            
               my $steptext = $2;
               $stephash{$stepname}  = $steptext;            
-          }elsif($line =~ /($C)\s+/){ # step has white space after it
+          }elsif($line =~ $rg_whitespace){ # step has white space after it
               $not_started = 0;
               $stepname = $1;
               $stephash{$stepname} = ""

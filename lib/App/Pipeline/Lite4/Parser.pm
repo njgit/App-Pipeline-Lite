@@ -188,8 +188,12 @@ sub parse_pipeline_to_step_hash   {
         my $K = qr{^[\w\-]+\.groupby\.[\w\-]+\.[\w\-]+};
             
         my $N = qr{\s(.+)};
+        my $O = qr{\s+};
         my $rg = qr{        
             ($C|$D|$E|$F|$G|$H|$I|$J|$K)$N      
+        }x;
+        my $rg_whitespace = qr{        
+            ($C|$D|$E|$F|$G|$H|$I|$J|$K)$O      
         }x;
        
         if( $line =~ $rg) {
@@ -197,7 +201,7 @@ sub parse_pipeline_to_step_hash   {
             $stepname = $1;            
             my $steptext = $2;
             $stephash{$stepname}  = $steptext;            
-        }elsif($line =~ /($C)\s+/){ # step has white space after it
+        }elsif($line =~ $rg_whitespace){ # step has white space after it
             $not_started = 0;
             $stepname = $1;
             $stephash{$stepname} = ""
