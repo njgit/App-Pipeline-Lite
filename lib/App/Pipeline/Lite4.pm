@@ -167,7 +167,7 @@ sub _symlink_paths {
               }     
              my $symlink_path = path($symlink_dir,$new_basename);        
              #my $symlink_path = path($symlink_dir,$job_ids->[$job_num],$file_path);
-             warn " SYMLINK $path_to_link $symlink_path";    
+             say STDERR " SYMLINK $path_to_link $symlink_path";    
              CORE::symlink $path_to_link, $symlink_path;       
          }  
 } 
