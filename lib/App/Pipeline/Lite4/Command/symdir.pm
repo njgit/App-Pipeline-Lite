@@ -26,9 +26,7 @@ use App::Pipeline::Lite4;
         #get datasource from settings directory and set to datasource file
         $resolver->datasource_file( $resolver->datasource_from_run($run_num) );
         my $datasource = $resolver->pipeline_datasource;
-        
-        
-        
+                
         my $output_run_dir = path( $resolver->output_dir, "run".$run_num);
         my @jobs =  grep { /job/ } $output_run_dir->children
         print "@jobs\n"; 
