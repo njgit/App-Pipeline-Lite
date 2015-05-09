@@ -19,10 +19,12 @@ Welcome to Pipelite's documentation!
 Installation
 ============
 
-Download the Pipelite executable - plite, and an associated dispatcher - dispatch-basic::
+Download the Pipelite executable - **plite***, and an associated dispatcher - **dispatch-basic**::
 
      wget -O plite https://github.com/njgit/App-Pipeline-Lite/blob/master/bin/packed/plite?raw=true
      wget -O dispatch-basic https://github.com/njgit/App-Pipeline-Lite/blob/master/bin/packed/dispatch-basic?raw=true
+     chmod 755 plite
+     chmod 755 dispatch-basic
 
 Add plite to your PATH in someway - e.g. move plite to a bin directory such as ~/bin
 
@@ -56,6 +58,106 @@ Step Conditions
 
 Configuration
 =============
+
+Lets say you have a command that prints a sequence of numbers, filters some out and writes to a file::
+
+
+    seq 10 | grep -v '5|6' > filterseq.txt  
+
+
+And you want to seq for **N** different values, and **filter** on different numbers - as listed in 
+a table 
+
+| N     | filter | group |   name
+| ------|--------|------|-----------
+| 12    |  5&#124;6   |  A   |    james
+| 15    |  7&#124;8   |  B   |    nozomi
+| 16    |  9&#124;10  |  A   |    ryan
+| 20    |  12&#124;13 |  B   |    tiffiny
+
+Create a new pipeline directory and a set of skeleton files::
+
+    plite new filter-seq
+
+
+View the default pipeline file located in filter-seq/filter-seq.pipeline::
+
+    plite vp filter-seq
+
+This consists of one line, showing how the command has been made into a "template"
+that can be run over each row of the datasource. A step starts with the name of the step
+followed by a dot.
+
+    seq. seq [% datasource.N %] | grep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]
+
+Take a look at the "datasource" for the pipeline - corresponding to the table above.  
+
+    less filter-seq/filter-seq.datasource
+
+Run the single step pipeline over the datasource.
+
+    plite run filter-seq
+
+Check the output files.
+
+    tree filter-seq/output
+    filter-seq/output
+    └── run1
+        ├── job0
+        │       └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job1
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job2
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job3
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        └── settings
+            └── 1
+                ├── filter-seq.datasource
+                ├── filter-seq.graph.yaml
+                └── filter-seq.pipeline
+
+
+
+Symlink recognisable identifiers from the datasource to the pipeline files.
+
+    plite symlink -f name filter-seq
+    tree filter-seq/symlink/
+    filter-seq/symlink/
+    └── seq
+        └── 1
+            ├── james-err -> /filter-seq/output/run1/job0/seq/err
+            ├── james-filterseq.txt -> /filter-seq/output/run1/job0/seq/filterseq.txt
+            ├── nozomi-err -> /filter-seq/output/run1/job1/seq/err
+            ├── nozomi-filterseq.txt -> /filter-seq/output/run1/job1/seq/filterseq.txt
+            ├── ryan-err -> /filter-seq/output/run1/job2/seq/err
+            ├── ryan-filterseq.txt -> /filter-seq/output/run1/job2/seq/filterseq.txt
+            ├── tiffiny-err -> /filter-seq/output/run1/job3/seq/err
+            └── tiffiny-filterseq.txt -> /filter-seq/output/run1/job3/seq/filterseq.txt
+
+
+Check the raw "command" file using.
+
+    plite vg feature-seq
+
+
+If you don't want to actually dispatch the pipeline(execute the commands), then
+use the -m switch (or --smoke-test)
+
+
+     plite run -m filter-seq
+
+
+This still produces the raw "command file" that allows you to inspect what will be run.
+
 
 prepend error
 -------------
