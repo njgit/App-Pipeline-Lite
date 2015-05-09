@@ -6,11 +6,14 @@
 Welcome to Pipelite' documentation!
 ===================================
 
-Contents:
+*Pipelite* is a lightweight workflow system developed in a bioinformatics context. 
+
+**Contents:**
 
 .. toctree::
    :maxdepth: 2
 
+   Installation
 
 Installation
 ============
