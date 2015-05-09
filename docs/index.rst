@@ -13,7 +13,8 @@ Welcome to Pipelite' documentation!
 .. toctree::
    :maxdepth: 2
 
-   Installation
+   index.rst
+
 
 Installation
 ============
