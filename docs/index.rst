@@ -68,12 +68,17 @@ Lets say you have a command that prints a sequence of numbers, filters some out 
 And you want to seq for **N** different values, and **filter** on different numbers - as listed in 
 a table 
 
-| N     | filter | group |   name
-| ------|--------|------|-----------
-| 12    |  5&#124;6   |  A   |    james
-| 15    |  7&#124;8   |  B   |    nozomi
-| 16    |  9&#124;10  |  A   |    ryan
-| 20    |  12&#124;13 |  B   |    tiffiny
++-------+-------------+-------+------------+
+| N     | filter      | group |   name     |
++=======+=============+=======+============+
+| 12    |  5&#124;6   |  A    |    james   |
++-------+-------------+-------+------------+
+| 15    |  7&#124;8   |  B    |    nozomi  |
++-------+-------------+-------+------------+
+| 16    |  9&#124;10  |  A    |    ryan    |
++-------+-------------+-------+------------+
+| 20    |  12&#124;13 |  B    |    tiffiny |
++-------+-------------+-------+------------+
 
 Create a new pipeline directory and a set of skeleton files::
 
