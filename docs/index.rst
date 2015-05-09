@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Pipelite' documentation!
+Welcome to Pipelite's documentation!
 ===================================
 
 *Pipelite* is a lightweight workflow system developed in a bioinformatics context. 
@@ -23,6 +23,19 @@ Download the Pipelite executable - plite, and an associated dispatcher - dispatc
 
      wget -O plite https://github.com/njgit/App-Pipeline-Lite/blob/master/bin/packed/plite?raw=true
      wget -O dispatch-basic https://github.com/njgit/App-Pipeline-Lite/blob/master/bin/packed/dispatch-basic?raw=true
+
+Add plite to your PATH in someway - e.g. move plite to a bin directory such as ~/bin
+
+To configure the system run::
+
+    plite vsc --editor vim
+
+Where "vim" can be replaced by your favourite editor. This will open a config file with one line - a configuration variable for the current editor.
+Add the following line to set the dispatcher::
+
+    dispatcher=/path/to/dispatch-basic
+
+Where /path/to is substituted with the real path to dispatch-basic.
 
 
 Quick Start
