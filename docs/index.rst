@@ -19,7 +19,7 @@ Welcome to Pipelite's documentation!
 Installation
 ============
 
-Download the Pipelite executable - **plite***, and an associated dispatcher - **dispatch-basic**::
+Download the Pipelite executable - **plite**, and an associated dispatcher - **dispatch-basic**::
 
      wget -O plite https://github.com/njgit/App-Pipeline-Lite/blob/master/bin/packed/plite?raw=true
      wget -O dispatch-basic https://github.com/njgit/App-Pipeline-Lite/blob/master/bin/packed/dispatch-basic?raw=true
