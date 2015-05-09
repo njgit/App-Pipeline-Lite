@@ -43,11 +43,12 @@ Where /path/to is substituted with the real path to dispatch-basic.
 Quick Start
 ===========
 
+A Single Step Pipeline
+----------------------
+
 Lets say you have a command that prints a sequence of numbers, filters some out and writes to a file::
 
-
-    seq 10 | grep -v '5|6' > filterseq.txt  
-
+    seq 10 | grep -v '5|6' > filterseq.txt
 
 And you want to seq for **N** different values, and **filter** on different numbers - as listed in 
 a table 
@@ -67,7 +68,6 @@ a table
 Create a new pipeline directory and a set of skeleton files::
 
     plite new filter-seq
-
 
 View the default pipeline file located in filter-seq/filter-seq.pipeline::
 
@@ -145,6 +145,11 @@ use the -m switch (or --smoke-test)::
 
 
 This still produces the raw "command file" that allows you to inspect what will be run.
+
+
+Adding more steps
+-----------------
+
 
 
 
