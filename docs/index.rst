@@ -43,22 +43,6 @@ Where /path/to is substituted with the real path to dispatch-basic.
 Quick Start
 ===========
 
-
-The Datasource
-==============
-
-Steps
-=====
-
-Basic Step
-----------
-
-Step Conditions
----------------
-
-Configuration
-=============
-
 Lets say you have a command that prints a sequence of numbers, filters some out and writes to a file::
 
 
@@ -73,11 +57,11 @@ a table
 +=======+=============+=======+============+
 | 12    |  5\|6       |  A    |    james   |
 +-------+-------------+-------+------------+
-| 15    |  7&#124;8   |  B    |    nozomi  |
+| 15    |  7\|8       |  B    |    nozomi  |
 +-------+-------------+-------+------------+
-| 16    |  9&#124;10  |  A    |    ryan    |
+| 16    |  9\|10      |  A    |    ryan    |
 +-------+-------------+-------+------------+
-| 20    |  12&#124;13 |  B    |    tiffiny |
+| 20    |  12\|13     |  B    |    tiffiny |
 +-------+-------------+-------+------------+
 
 Create a new pipeline directory and a set of skeleton files::
@@ -91,19 +75,19 @@ View the default pipeline file located in filter-seq/filter-seq.pipeline::
 
 This consists of one line, showing how the command has been made into a "template"
 that can be run over each row of the datasource. A step starts with the name of the step
-followed by a dot.
+followed by a dot::
 
     seq. seq [% datasource.N %] | grep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]
 
-Take a look at the "datasource" for the pipeline - corresponding to the table above.  
+Take a look at the "datasource" for the pipeline - corresponding to the table above::
 
     less filter-seq/filter-seq.datasource
 
-Run the single step pipeline over the datasource.
+Run the single step pipeline over the datasource::
 
     plite run filter-seq
 
-Check the output files.
+Check the output files::
 
     tree filter-seq/output
     filter-seq/output
@@ -132,7 +116,7 @@ Check the output files.
 
 
 
-Symlink recognisable identifiers from the datasource to the pipeline files.
+Symlink recognisable identifiers from the datasource to the pipeline files::
 
     plite symlink -f name filter-seq
     tree filter-seq/symlink/
@@ -149,19 +133,36 @@ Symlink recognisable identifiers from the datasource to the pipeline files.
             └── tiffiny-filterseq.txt -> /filter-seq/output/run1/job3/seq/filterseq.txt
 
 
-Check the raw "command" file using.
+Check the raw "command" file using::
 
     plite vg feature-seq
 
-
 If you don't want to actually dispatch the pipeline(execute the commands), then
-use the -m switch (or --smoke-test)
+use the -m switch (or --smoke-test)::
 
 
      plite run -m filter-seq
 
 
 This still produces the raw "command file" that allows you to inspect what will be run.
+
+
+
+The Datasource
+==============
+
+Steps
+=====
+
+Basic Step
+----------
+
+Step Conditions
+---------------
+
+Configuration
+=============
+
 
 
 prepend error
