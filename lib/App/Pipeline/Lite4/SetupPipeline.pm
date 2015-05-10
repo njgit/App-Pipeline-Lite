@@ -36,7 +36,7 @@ sub create_pipeline_directory {
     
     #create a small pipeline file and a dummy test data directory
  
-    $pipeline_file->spew("seq. seq [% datasource.N %] | grep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]");
+    $pipeline_file->spew("seq. seq [% datasource.N %] | egrep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]");
     $test_data_file->parent->mkpath();
     #$test_data_file->spew("line1\nline2\nline3");    
 my $ds = "N\tfilter\tgroup\tname
