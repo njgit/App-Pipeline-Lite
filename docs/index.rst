@@ -331,7 +331,7 @@ Since there are only two groups, only two files will be produced that are releva
 determined by the first occurrence of the group value in the datasource.
 
 
-The output tree focused on run3 shows that just the first two jobs have relevant data:: 
+The output tree focused on run4 shows that just the first two jobs have relevant data:: 
 
     run4
         ├── job0
