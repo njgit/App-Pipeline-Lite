@@ -48,7 +48,7 @@ A Single Step Pipeline
 
 Lets say you have a command that prints a sequence of numbers, filters some out and writes to a file::
 
-    seq 10 | grep -v '5|6' > filterseq.txt
+    seq 10 | egrep -v '5|6' > filterseq.txt
 
 And you want to seq for **N** different values, and **filter** on different numbers - as listed in 
 a table 
@@ -77,7 +77,7 @@ This consists of one line, showing how the command has been made into a "templat
 that can be run over each row of the datasource. A step starts with the name of the step
 followed by a dot::
 
-    seq. seq [% datasource.N %] | grep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]
+    seq. seq [% datasource.N %] | egrep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]
 
 Take a look at the "datasource" for the pipeline - corresponding to the table above::
 
