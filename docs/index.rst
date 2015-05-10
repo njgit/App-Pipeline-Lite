@@ -274,49 +274,48 @@ determined by the first occurrence of the group value in the datasource.
 
 The output tree focused on run3 and with size of files shows that just the first two jobs have relevant data:: 
 
-     [4.0K]  run3
-     ├── [4.0K]  job0
-     │   ├── [4.0K]  concat-seq
-     │   │   ├── [   0]  err
-     │   │   └── [  57]  filterseq-group.txt
-     │   ├── [4.0K]  count-chars
-     │   │   ├── [  77]  char.count
-     │   │   └── [   0]  err
-     │   └── [4.0K]  seq
-     │       ├── [   0]  err
-     │       └── [  23]  filterseq.txt
-     ├── [4.0K]  job1
-     │   ├── [4.0K]  concat-seq
-     │   │   ├── [   0]  err
-     │   │   └── [  77]  filterseq-group.txt
-     │   ├── [4.0K]  count-chars
-     │   │   ├── [  77]  char.count
-     │   │   └── [   0]  err
-     │   └── [4.0K]  seq
-     │       ├── [   0]  err
-     │       └── [  32]  filterseq.txt
-     ├── [4.0K]  job2
-     │   ├── [4.0K]  concat-seq
-     │   ├── [4.0K]  count-chars
-     │   │   ├── [  77]  char.count
-     │   │   └── [   0]  err
-     │   └── [4.0K]  seq
-     │       ├── [   0]  err
-     │       └── [  34]  filterseq.txt
-     ├── [4.0K]  job3
-     │   ├── [4.0K]  concat-seq
-     │   ├── [4.0K]  count-chars
-     │   │   ├── [  77]  char.count
-     │   │   └── [   0]  err
-     │   └── [4.0K]  seq
-     │       ├── [   0]  err
-     │       └── [  45]  filterseq.txt
-     └── [4.0K]  settings
-         └── [4.0K]  1
-             ├── [  84]  pipeline1.datasource
-             ├── [4.8K]  pipeline1.graph.yaml
-             └── [ 274]  pipeline1.pipeline
-
+    run3
+        ├── job0
+        │   ├── concat-seq
+        │   │   ├── err
+        │   │   └── filterseq-group.txt
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job1
+        │   ├── concat-seq
+        │   │   ├── err
+        │   │   └── filterseq-group.txt
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job2
+        │   ├── concat-seq
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job3
+        │   ├── concat-seq
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        └── settings
+            └── 1
+                 ├── pipeline1.datasource
+                 ├── pipeline1.graph.yaml
+                 └── pipeline1.pipeline
 
 
 
