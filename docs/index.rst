@@ -169,7 +169,7 @@ Run the pipeline::
 
 The output directory tree now has a second "run" (run2) using the modified pipeline. The output tree now looks like this::
 
-    pipeline1/output
+    filter-seq/output
     ├── run1
     │   ├── job0
     │   │   └── seq
@@ -189,9 +189,9 @@ The output directory tree now has a second "run" (run2) using the modified pipel
     │   │       └── filterseq.txt
     │   └── settings
     │       └── 1
-    │           ├── pipeline1.datasource
-    │           ├── pipeline1.graph.yaml
-    │           └── pipeline1.pipeline
+    │           ├── filter-seq.datasource
+    │           ├── filter-seq.graph.yaml
+    │           └── filter-seq.pipeline
     └── run2
         ├── job0
         │   ├── count-chars
@@ -223,10 +223,15 @@ The output directory tree now has a second "run" (run2) using the modified pipel
         │       └── filterseq.txt
         └── settings
             └── 1
-                ├── pipeline1.datasource
-                ├── pipeline1.graph.yaml
-                └── pipeline1.pipeline
+                ├── filter-seq.datasource
+                ├── filter-seq.graph.yaml
+                └── filter-seq.pipeline
 
+
+Adding a groupby step
+---------------------
+
+A commonly required operation is to perform summary operations over groups identified in the datasource.
 
 
 The Datasource
