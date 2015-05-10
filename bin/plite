@@ -70,9 +70,9 @@ sub vp {
 
 sub vg {
      my $c = shift;
-     my $desc = 'vc (view pipeline graph) [OPTIONS] PIPELINE_DIR';
+     my $desc = 'vg (view pipeline graph) [OPTIONS] PIPELINE_DIR';
      my %options = (
-         'editor|e=s' => 'Sets the editor e.g. plite vp -e vim. Overrides config file setting if exists.'
+         'editor|e=s' => 'Sets the editor e.g. plite vg -e vim. Overrides config file setting if exists.'
      );
      return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;
      $c->getopt( keys %options );
