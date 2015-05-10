@@ -156,10 +156,12 @@ Edit the pipeline file::
 
     plite vp filter-seq
 
-To add in this step::
+To add in the counr-chars step as below::
 
     seq. seq [% datasource.N %] | egrep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]
+
     count-chars. wc [% seq.filterseq.txt %] > [% count-chars.char.count %]
+
 
 Run the pipeline::
 
@@ -228,31 +230,119 @@ The output directory tree now has a second "run" (run2) using the modified pipel
                 └── filter-seq.pipeline
 
 
+Summarising over all jobs using a once step
+-------------------------------------------
+
+
+
 Adding a groupby step
 ---------------------
 
-A commonly required operation is to perform summary operations over groups identified in the datasource.
+A commonly required operation is to perform summary operations over groups identified in the datasource. This is
+achieved using a groupby step that will substitute the filenames or values from the datasource or another step
+according to groups specified in the datasource.
+
+
+Let's say we want to concatenate the output files from the seq step together according to the group field specified in the
+datasource above. So the filter.txt files for james and ryan who are in group A should be concatenated together, and the files
+in group B ( nozomi and tiffiny ) should be concatenated together also.
+
+Modify the pipeline file::
+
+    plite vp filter-seq
+
+Include a new step called concat-seq::
+
+    seq. seq [% datasource.N %] | egrep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]
+
+    count-chars. wc -l [% seq.filterseq.txt %] > [% count-chars.char.count %]
+
+    concat-seq.groupby.group cat [% groupby.group.seq.filterseq.txt %] > [% concat-seq.filterseq-group.txt %]
+
+This command will effectively replace [% groupby.group.seq.filterseq.txt %] with the filterseq.txt files of each group with a space between them.
+
+So the groupby command on running the pipeline (if the pipeline was created in your home directory) would produce two commands like this::
+
+    cat ~/filter-seq/output/run3/job0/seq/filterseq.txt ~/filter-seq/output/run3/job2/seq/filterseq.txt > ~/filter-seq/output/run3/job0/concat-seq/filterseq-group.txt 
+    cat ~/filter-seq/output/run3/job1/seq/filterseq.txt ~/filter-seq/output/run3/job3/seq/filterseq.txt > ~/filter-seq/output/run3/job1/concat-seq/filterseq-group.txt
+
+job0 and job2 correspond to group A in the first command, and job1 and job3 correspond to group B. 
+
+Since there are only two groups, only two files will be produced that are relevant, and they will go into the first two job directories. As can be seen, the order is
+determined by the first occurrence of the group value in the datasource.
+
+
+The output tree focused on run3 and with size of files shows that just the first two jobs have relevant data:: 
+
+     [4.0K]  run3
+     ├── [4.0K]  job0
+     │   ├── [4.0K]  concat-seq
+     │   │   ├── [   0]  err
+     │   │   └── [  57]  filterseq-group.txt
+     │   ├── [4.0K]  count-chars
+     │   │   ├── [  77]  char.count
+     │   │   └── [   0]  err
+     │   └── [4.0K]  seq
+     │       ├── [   0]  err
+     │       └── [  23]  filterseq.txt
+     ├── [4.0K]  job1
+     │   ├── [4.0K]  concat-seq
+     │   │   ├── [   0]  err
+     │   │   └── [  77]  filterseq-group.txt
+     │   ├── [4.0K]  count-chars
+     │   │   ├── [  77]  char.count
+     │   │   └── [   0]  err
+     │   └── [4.0K]  seq
+     │       ├── [   0]  err
+     │       └── [  32]  filterseq.txt
+     ├── [4.0K]  job2
+     │   ├── [4.0K]  concat-seq
+     │   ├── [4.0K]  count-chars
+     │   │   ├── [  77]  char.count
+     │   │   └── [   0]  err
+     │   └── [4.0K]  seq
+     │       ├── [   0]  err
+     │       └── [  34]  filterseq.txt
+     ├── [4.0K]  job3
+     │   ├── [4.0K]  concat-seq
+     │   ├── [4.0K]  count-chars
+     │   │   ├── [  77]  char.count
+     │   │   └── [   0]  err
+     │   └── [4.0K]  seq
+     │       ├── [   0]  err
+     │       └── [  45]  filterseq.txt
+     └── [4.0K]  settings
+         └── [4.0K]  1
+             ├── [  84]  pipeline1.datasource
+             ├── [4.8K]  pipeline1.graph.yaml
+             └── [ 274]  pipeline1.pipeline
+
+
 
 
 The Datasource
 ==============
 
+
 Steps
 =====
+
 
 Basic Step
 ----------
 
+
 Step Conditions
 ---------------
+
 
 Configuration
 =============
 
 
-
 prepend error
 -------------
+
 
 append command
 --------------
@@ -261,14 +351,18 @@ append command
 Pipelite Structure
 ==================
 
+
 Parsing
 -------
+
 
 Resolving
 ---------
 
+
 Dependency Resolution
 ---------------------
+
 
 Dispatcher
 -----------
