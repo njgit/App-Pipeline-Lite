@@ -233,7 +233,7 @@ The output directory tree now has a second "run" (run2) using the modified pipel
 Summarising over all jobs using a once step
 -------------------------------------------
 
-A common task is to perform a summary over all processed jobs, or all values of a datasource.
+A common task is to perform a summary over all processed jobs or all values of a datasource.
 
 This can be achieved by adding a step that only executes once, and for which you can access the names of 
 all the files of a previous step or all the values from a datasource.
@@ -333,7 +333,7 @@ determined by the first occurrence of the group value in the datasource.
 
 The output tree focused on run3 shows that just the first two jobs have relevant data:: 
 
-    run3
+    run4
         ├── job0
         │   ├── concat-seq
         │   │   ├── err
