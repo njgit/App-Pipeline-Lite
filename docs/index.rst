@@ -156,7 +156,7 @@ Edit the pipeline file::
 
     plite vp filter-seq
 
-To add in the counr-chars step as below::
+To add in the count-chars step as below::
 
     seq. seq [% datasource.N %] | egrep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]
 
@@ -233,12 +233,71 @@ The output directory tree now has a second "run" (run2) using the modified pipel
 Summarising over all jobs using a once step
 -------------------------------------------
 
+A common task is to perform a summary over all processed jobs, or all values of a datasource.
+
+This can be achieved by adding a step that only executes once, and for which you can access the names of 
+all the files of a previous step or all the values from a datasource.
+
+Edit the pipeline file::
+
+    plite vp filter-seq
+
+Add a step that counts characters over all the filterseq.txt files::
+
+    seq. seq [% datasource.N %] | egrep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]
+
+    count-chars. wc [% seq.filterseq.txt %] > [% count-chars.char.count %]
+
+    count-all-chars.once wc [% jobs.seq.filterseq.txt %] > [% count-all-chars.sum.txt %]
+
+By prepending the "jobs" keyword to the file reference "seq.filterseq.txt" in [% jobs.seq.filterseq.txt %] substitutes the names of all the filterseq.txt files produced from the seq step. 
+
+The output tree looks like::
+
+    └── run3
+        ├── job0
+        │   ├── count-all-chars
+        │   │   ├── err
+        │   │   └── sum.txt
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job1
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job2
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job3
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        └── settings
+             └── 1
+                 ├── filter-seq.datasource
+                 ├── filter-seq.graph.yaml
+                 └── filter-seq.pipeline
+
 
 
 Adding a groupby step
 ---------------------
 
-A commonly required operation is to perform summary operations over groups identified in the datasource. This is
+A commonly required task is to perform summary operations over groups identified in the datasource. This is
 achieved using a groupby step that will substitute the filenames or values from the datasource or another step
 according to groups specified in the datasource.
 
@@ -313,14 +372,16 @@ The output tree focused on run3 shows that just the first two jobs have relevant
         │       └── filterseq.txt
         └── settings
             └── 1
-                 ├── pipeline1.datasource
-                 ├── pipeline1.graph.yaml
-                 └── pipeline1.pipeline
+                 ├── filter-seq.datasource
+                 ├── filter-seq.graph.yaml
+                 └── filter-seq.pipeline
 
 
 
 The Datasource
 ==============
+
+
 
 
 Steps
