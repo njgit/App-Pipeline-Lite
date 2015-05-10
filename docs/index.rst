@@ -150,6 +150,82 @@ This still produces the raw "command file" that allows you to inspect what will 
 Adding more steps
 -----------------
 
+We can add another step that takes the output of the seq. step and counts the number of characters in that file.
+
+Edit the pipeline file::
+
+    plite vp filter-seq
+
+To add in this step::
+
+    seq. seq [% datasource.N %] | egrep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]
+    count-chars. wc [% seq.filterseq.txt %] > [% count-chars.char.count %]
+
+Run the pipeline::
+
+    plite run filter-seq
+
+**Plite** will ensure that the count-char step is run after the seq step.  
+
+The output directory tree now has a second "run" (run2) using the modified pipeline. The output tree now looks like this::
+
+    pipeline1/output
+    ├── run1
+    │   ├── job0
+    │   │   └── seq
+    │   │       ├── err
+    │   │       └── filterseq.txt
+    │   ├── job1
+    │   │   └── seq
+    │   │       ├── err
+    │   │       └── filterseq.txt
+    │   ├── job2
+    │   │   └── seq
+    │   │       ├── err
+    │   │       └── filterseq.txt
+    │   ├── job3
+    │   │   └── seq
+    │   │       ├── err
+    │   │       └── filterseq.txt
+    │   └── settings
+    │       └── 1
+    │           ├── pipeline1.datasource
+    │           ├── pipeline1.graph.yaml
+    │           └── pipeline1.pipeline
+    └── run2
+        ├── job0
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job1
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job2
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        ├── job3
+        │   ├── count-chars
+        │   │   ├── char.count
+        │   │   └── err
+        │   └── seq
+        │       ├── err
+        │       └── filterseq.txt
+        └── settings
+            └── 1
+                ├── pipeline1.datasource
+                ├── pipeline1.graph.yaml
+                └── pipeline1.pipeline
 
 
 
