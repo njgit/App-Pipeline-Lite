@@ -84,7 +84,7 @@ sub symlink {
     foreach my $job_num (keys %$resolved_pipeline){
         my $job = $resolved_pipeline->{$job_num};         
         foreach my $step (keys %$job) {
-            my $job_ids;   # e.g. job_id is a label attached to each job based on the values in a column (specified by id_field) of the datasource
+            my $job_ids;   # A job_id is a label attached to each job based on the values in a column (specified by id_field) of the datasource
 
             if (defined ($STEP_AND_FNAME) ){
                next unless $step eq $STEP;
@@ -148,9 +148,7 @@ sub symlink {
                 }
          }
        }
-    }
-    
-    
+    }   
 }
  
 sub _symlink_paths {
