@@ -92,7 +92,7 @@ $fatpacked{"App/Pipeline/Lite4.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
       foreach my $job_num (keys %$resolved_pipeline){
           my $job = $resolved_pipeline->{$job_num};         
           foreach my $step (keys %$job) {
-              my $job_ids;   
+              my $job_ids;   # A job_id is a label attached to each job based on the values in a column (specified by id_field) of the datasource
   
               if (defined ($STEP_AND_FNAME) ){
                  next unless $step eq $STEP;
@@ -156,9 +156,7 @@ $fatpacked{"App/Pipeline/Lite4.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
                   }
            }
          }
-      }
-      
-      
+      }   
   }
    
   sub _symlink_paths {
@@ -190,8 +188,12 @@ $fatpacked{"App/Pipeline/Lite4.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
       
       my @job_ids ;
       if(defined $groupby_fields){
-          my $groupby_field = $groupby_fields->[0];  # only one group by supported at the moment      
-          $datasource = $datasource->group([$groupby_field],[$id_field],[sub { join("-",@_) } ],["$id_field-group"] );
+          my $groupby_field = $groupby_fields->[0];  # only one group by supported at the moment
+          if( $groupby_field eq $id_field){      
+              $datasource = $datasource->group([$groupby_field],[$id_field],[sub { $_[0] } ],["$id_field-group"] );
+          }else{
+              $datasource = $datasource->group([$groupby_field],[$id_field],[sub { join("-",@_) } ],["$id_field-group"] );
+          }        
           #$self->logger->debug("Symlink - grouped datasource looks like " . $datasource->tsv );
           $id_field = "$id_field-group";
       }
@@ -2692,7 +2694,7 @@ $fatpacked{"App/Pipeline/Lite4/SetupPipeline.pm"} = '#line '.(1+__LINE__).' "'._
       
       #create a small pipeline file and a dummy test data directory
    
-      $pipeline_file->spew("seq. seq [% datasource.N %] | grep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]");
+      $pipeline_file->spew("seq. seq [% datasource.N %] | egrep -v '[% datasource.filter %]' > [% seq.filterseq.txt %]");
       $test_data_file->parent->mkpath();
       #$test_data_file->spew("line1\nline2\nline3");    
   my $ds = "N\tfilter\tgroup\tname
@@ -48529,9 +48531,9 @@ sub vp {
 
 sub vg {
      my $c = shift;
-     my $desc = 'vc (view pipeline graph) [OPTIONS] PIPELINE_DIR';
+     my $desc = 'vg (view pipeline graph) [OPTIONS] PIPELINE_DIR';
      my %options = (
-         'editor|e=s' => 'Sets the editor e.g. plite vp -e vim. Overrides config file setting if exists.'
+         'editor|e=s' => 'Sets the editor e.g. plite vg -e vim. Overrides config file setting if exists.'
      );
      return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;
      $c->getopt( keys %options );
