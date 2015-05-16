@@ -233,10 +233,12 @@ The output directory tree now has a second "run" (run2) using the modified pipel
 Summarising over all jobs using a once step
 -------------------------------------------
 
-A common task is to perform a summary over all processed jobs or all values of a datasource.
+A common task is to perform a summary over all of the output of a previous step, or perhaps all values of a datasource.
+For example, counting the total number of characters in all of the filterseq.txt files produced in the seq step
+of the filter-seq pipeline.
 
-This can be achieved by adding a step that only executes once, and for which you can access the names of 
-all the files of a previous step or all the values from a datasource.
+This can be achieved by adding a step that executes only once, and for which you can access the path names of 
+all the filterseq.txt files.
 
 Edit the pipeline file::
 
