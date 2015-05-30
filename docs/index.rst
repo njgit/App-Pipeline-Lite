@@ -379,11 +379,78 @@ The output tree focused on run4 shows that just the first two jobs have relevant
                  └── filter-seq.pipeline
 
 
+Again, to link these to meaningful file names use the symlink command::
+
+    plite symlink --id_field group filterseq
+
+If the value --id_field in the symlink is not the field groupby field,
+then the name of the filename will be a concatenation of the names
+in the group::
+
+  plite symlink --id_field name filterseq
+
+
 
 The Datasource
 ==============
 
+A **datasource** is a tab delimited table with column headings that lists files and associated metadata for which a pipeline will be 
+run over. Typically it may look something like this:
 
++------------+-------------+-----------+------------+
+| file       | source      | curator   | transport  |
++============+=============+===========+============+
+| file1.txt  | Thailand    |  Henry    |  plane     |
++------------+-------------+-----------+------------+
+| file2.txt  | Barbados    |  Ali      |  ship      |
++------------+-------------+-----------+------------+
+| file3.txt  | Canada      |  Veronica |  plane     |
++------------+-------------+-----------+------------+
+| file4.txt  | Samoa       |  Henry    |  plane     |
++------------+-------------+-----------+------------+
+
+
+Instances in the table are referenced in the pipeline description file using [% datasource.COLUMN_NAME %]. 
+
+E.g in a step::
+
+   mystep. wc -l [% datasource.file %] > [% mystep.linecount.txt %]
+
+If this step was part of a pipeline called my-pipeline, running::
+
+   plite run my-pipeline 
+
+would execute four "jobs" over each row of the database, as indicated below: 
+
++------------+-------------+-----------+------------+----------------------------------------------------------------+
+| file       | source      | curator   | transport  |  job command                                                   |
++============+=============+===========+============+================================================================+
+| file1.txt  | Thailand    |  Henry    |  plane     |  wc -l file1.txt > OUTPUT_PATH/run1/job0/mystep/linecount.txt  |
++------------+-------------+-----------+------------+----------------------------------------------------------------+
+| file2.txt  | Barbados    |  Ali      |  ship      |  wc -l file2.txt > OUTPUT_PATH/run1/job1/mystep/linecount.txt  |
++------------+-------------+-----------+------------+----------------------------------------------------------------+
+| file3.txt  | Canada      |  Veronica |  plane     |  wc -l file2.txt > OUTPUT_PATH/run1/job2/mystep/linecount.txt  |
++------------+-------------+-----------+------------+----------------------------------------------------------------+
+| file4.txt  | Samoa       |  Henry    |  plane     |  wc -l file3.txt > OUTPUT_PATH/run1/job2/mystep/linecount.txt  |
++------------+-------------+-----------+------------+----------------------------------------------------------------+
+
+\*OUTPUT_PATH signfies the path to the output directory.
+
+Each row of the table corresponds to a "job" in the system for which the pipeline will be run over. Jobs are numbered from 0 to n-1. 
+
+To run a pipeline over specific jobs in the system use the --jobs/-j switch. 
+
+E.g. to run the pipeline on the second row of the datasource ::
+
+   plite run -j 1 my-pipeline
+
+E.g. to run the pipeline on the first three jobs of the datasource::
+ 
+   plite run -j '0-2' my-pipeline
+
+E.g to run the pipeline on the second and fourth rows in the datasource::
+
+   plite run -j '2,4' my-pipeline
 
 
 Steps
