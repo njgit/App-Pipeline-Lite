@@ -390,7 +390,6 @@ in the group::
   plite symlink --id_field name filterseq
 
 
-
 The Datasource
 ==============
 
@@ -410,9 +409,11 @@ run over. Typically it may look something like this:
 +------------+-------------+-----------+------------+
 
 
-Instances in the table are referenced in the pipeline description file using [% datasource.COLUMN_NAME %]. 
+Instances in the table are referenced in the pipeline description file using::
 
-E.g in a step::
+     [% datasource.COLUMN_NAME %]. 
+
+For example, in a step::
 
    mystep. wc -l [% datasource.file %] > [% mystep.linecount.txt %]
 
@@ -420,7 +421,7 @@ If this step was part of a pipeline called my-pipeline, running::
 
    plite run my-pipeline 
 
-would execute four "jobs" over each row of the database, as indicated below: 
+would execute four jobs over each row of the database, as indicated below: 
 
 +------------+-------------+-----------+------------+----------------------------------------------------------------+
 | file       | source      | curator   | transport  |  job command                                                   |
