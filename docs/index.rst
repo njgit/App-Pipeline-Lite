@@ -421,7 +421,7 @@ If this step was part of a pipeline called my-pipeline, running::
 
    plite run my-pipeline 
 
-would execute four jobs over each row of the database, as indicated below: 
+would execute four jobs over each row of the datasource, as indicated below: 
 
 +------------+-------------+-----------+------------+----------------------------------------------------------------+
 | file       | source      | curator   | transport  |  job command                                                   |
