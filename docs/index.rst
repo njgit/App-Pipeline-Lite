@@ -454,13 +454,37 @@ E.g to run the pipeline on the second and fourth rows in the datasource::
    plite run -j '2,4' my-pipeline
 
 
-Steps
-=====
+Pipeline Description 
+====================
 
+A pipeline file is composed of comments and steps. Comments are denoted with the # character at the beginning of 
+line. The step syntax is described in the following sections. 
+
+Steps
+-----
 
 Basic Step
-----------
+^^^^^^^^^^
 
+A step is composed of the name of the step, followed by a dot, then commands e.g.::
+
+    count-lines. wc -l ~/file.txt > ~/file-line-count.txt
+
+The command part of the step may start on the line below. e.g.::
+
+   count-lines.
+     wc -l ~/file.txt > ~/file-line-count.txt
+
+and can take up several lines.
+
+A blank line must separate one command from another, e.g.::
+
+    count-lines. wc -l ~/file.txt > ~/file-line-count.txt
+
+    count-lines-again.
+       wc -l ~/file.txt > ~/file-line-count.txt
+
+ 
 
 Step Conditions
 ---------------
