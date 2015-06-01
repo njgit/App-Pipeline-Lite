@@ -2158,7 +2158,7 @@ $fatpacked{"App/Pipeline/Lite4/Resolver.pm"} = '#line '.(1+__LINE__).' "'.__FILE
   
      my $iter = $dir->iterator( { recurse => 1 } );  
      while( my $path = $iter->() ){        
-          next unless $path->is_file;
+          next unless( $path->is_file || $path->is_dir);
           push( @files, $path);
      }
       #add to placeholder;   
