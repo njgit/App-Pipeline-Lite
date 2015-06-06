@@ -486,17 +486,17 @@ A blank line must separate one command from another, e.g.::
 
  
 Step Conditions
----------------
+^^^^^^^^^^^^^^^
 
 Conditions can be attached to a step that indicate or specify the step behaviour.
 
-By appending .once to a step ensures that the step runs only once, no matter how many datasource entries might exists. E.g.::
+Appending .once to a step ensures that the step runs only once, no matter how many datasource entries might exists. E.g.::
 
     count-lines.once wc -l [% datasource.file %] > [% count-lines.line-count.txt %]
 
-When a pipeline with this step is run, it will only run once, and the results will be placed into the Job0 directory.
+When a pipeline is run, this step will only run once and the results will be placed into the Job0 directory.
 
-Typically, a step is run once to summarise something over all steps, and is used in conjunction with a placeholder that references files from 
+Typically, a step is run once to summarise something over all steps and is used in conjunction with a placeholder that references files from 
 all jobs. E.g.::
 
     count-lines.once wc -l [% jobs.datasource.file %] > [% count-lines.all-line-count.txt %]
@@ -505,7 +505,12 @@ Here the jobs.datasource.file placeholder, will substitute the name of each file
 
     wc -l file1.txt file2.txt file3.txt file4.txt > OUTPUT_PATH/run1/job0/mystep/all-line-count.txt
 
-By appending a .groupby condition, indicates that the step will operate over a grouping based on a datasource field. E.g.::
+You might use this to summarise or aggregate the output from another step E.g::
+
+    count-lines. wc -l [% datasource.file %] > [% count-lines.line-count.txt %]
+    line-count-report.once cat [% jobs.count-line.line-count.txt %] > [% line-count-report.line-report.txt %]
+
+Appending a .groupby condition indicates that the step will operate over a grouping based on a datasource field. E.g.::
 
    count-lines.groupby wc -l [% groupby.transport.file.txt %] > [% count-lines.line-count-by-transport.txt %]
 
