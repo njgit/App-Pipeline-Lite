@@ -484,6 +484,19 @@ A blank line must separate one command from another, e.g.::
     count-lines-again.
        wc -l ~/file.txt > ~/file-line-count.txt
 
+
+Templating a step and referencing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To template the step, the [%, and %] brackets are used to indicate that these are placeholders and vary
+over a designated datasource::
+
+    count-lines. wc -l [% datasource.filename %] > [% count-lines.line-count.txt %]
+
+Another step can be constructed that references the output of the command above::
+
+    cat-line-count. cat [% count-lines.line-count.txt %] > [% cat-line-count.out.txt %]
+
  
 Step Conditions
 ^^^^^^^^^^^^^^^
@@ -520,9 +533,40 @@ This will be expanded to two jobs::
      wc -l file1.txt file3.txt file4.txt > OUTPUT_PATH/run1/job0/mystep/transport-count-by-transport.txt
 
    job1
-     wc -l file2.txt > OUTPUT_PATH/run1/job0/mystep/transport-count-by-transport.txt
+     wc -l file2.txt > OUTPUT_PATH/run1/job1/mystep/transport-count-by-transport.txt
 
 
+Step Conditions - Runtime Resource Parameters 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The pipeline description allows for the specification of parameters related to resource requirements. Currently, the 
+ minimum RAM in Kilobases, and the minimum number of processing cores may be specified::
+
+    count-lines.once wc -l [% datasource.file %] > [% count-lines.line-count.txt %]
+    count-lines.mem 5000
+    count-lines.cores 3
+
+
+Step Conditions - Output file registration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Output files can be registered with a step by listing them in an output condition. This is particularly useful
+when software produces output files that are not able to be referenced from within a step description. 
+
+For example, imagine a short program, that counted lines and wrote a file in the current directory:: 
+
+   line-count. linecount [% datasource.file %] 
+  
+Since there is no output explicitly stated in the command, there is also no reference to the file that has been created.
+The .output step registration step allows for this to be recognised::
+
+   line-count. linecount [% datasource.file %]
+   line-count.output count.txt
+
+This is then referenced in other steps using a particular naming scheme based on the order the steps are listed in the registration::
+
+  cat-line-count. cat [% line-count.output1 %] > [% cat-line-count.out.txt %]
+ 
 
 Configuration
 =============
