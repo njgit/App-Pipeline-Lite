@@ -547,8 +547,8 @@ The pipeline description allows for the specification of parameters related to r
     count-lines.cores 3
 
 
-Step Conditions: Output file registration
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step Conditions: Output File Registration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Output files can be registered with a step by listing them in an output condition. This is particularly useful
 when software produces output files that are not able to be referenced from within a step description. 
