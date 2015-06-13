@@ -536,18 +536,18 @@ This will be expanded to two jobs::
      wc -l file2.txt > OUTPUT_PATH/run1/job1/mystep/transport-count-by-transport.txt
 
 
-Step Conditions - Runtime Resource Parameters 
+Step Conditions: Runtime Resource Parameters 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The pipeline description allows for the specification of parameters related to resource requirements. Currently, the 
- minimum RAM in Kilobases, and the minimum number of processing cores may be specified::
+
+The pipeline description allows for the specification of parameters related to resource requirements. Currently, the minimum RAM in Kilobases, and the minimum number of processing cores may be specified::
 
     count-lines.once wc -l [% datasource.file %] > [% count-lines.line-count.txt %]
     count-lines.mem 5000
     count-lines.cores 3
 
 
-Step Conditions - Output file registration
+Step Conditions: Output file registration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Output files can be registered with a step by listing them in an output condition. This is particularly useful
