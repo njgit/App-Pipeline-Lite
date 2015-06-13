@@ -553,7 +553,7 @@ Step Conditions: Output file registration
 Output files can be registered with a step by listing them in an output condition. This is particularly useful
 when software produces output files that are not able to be referenced from within a step description. 
 
-For example, imagine a short program, that counted lines and wrote a file in the current directory:: 
+For example, imagine a short program called **linecount**, that counted lines and wrote a file in the current directory:: 
 
    line-count. linecount [% datasource.file %] 
   
@@ -565,7 +565,16 @@ The .output step registration step allows for this to be recognised::
 
 This is then referenced in other steps using a particular naming scheme based on the order the steps are listed in the registration::
 
-  cat-line-count. cat [% line-count.output1 %] > [% cat-line-count.out.txt %]
+   cat-line-count. cat [% line-count.output1 %] > [% cat-line-count.out.txt %]
+
+
+If our **linecount** program also output a file with other statistical information we might have the following::
+
+    line-count. linecount [% datasource.file %]
+    line-count.output count.txt stats.txt
+
+    cat-line-count. cat [% line-count.output1 %] [% line-count.output2 %] > [% cat-line-count.out.txt %]
+
  
 
 Configuration
