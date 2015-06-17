@@ -177,7 +177,7 @@ my $desc = "symlink (creates dir of symlinks) [OPTIONS] PIPELINE
           'step_and_fname|s=s' => 'Step and filename in format STEP#FILENAME',
           #'path|p=s' => 'Path of symlink directory other than default, which will be created if it does not exist',
           'name|n=s' => 'Replaces filename with new name',
-          'datasource|d=s' => 'Path to datasource file, if not given then datasource of the last run will be used'
+          'datasource|d=s' => 'Path to datasource file, if not given then datasource of the run_num will be used'
           );  
       $c->getopt( keys %options );
       return _usage ( $desc, \%options ) if scalar @{ $c->argv } == 0;
