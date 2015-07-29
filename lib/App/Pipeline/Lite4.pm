@@ -84,7 +84,7 @@ sub symlink {
     foreach my $job_num (keys %$resolved_pipeline){
         my $job = $resolved_pipeline->{$job_num};         
         foreach my $step (keys %$job) {
-            my $job_ids;   
+            my $job_ids;   # A job_id is a label attached to each job based on the values in a column (specified by id_field) of the datasource
 
             if (defined ($STEP_AND_FNAME) ){
                next unless $step eq $STEP;
@@ -148,9 +148,7 @@ sub symlink {
                 }
          }
        }
-    }
-    
-    
+    }   
 }
  
 sub _symlink_paths {
@@ -169,7 +167,7 @@ sub _symlink_paths {
               }     
              my $symlink_path = path($symlink_dir,$new_basename);        
              #my $symlink_path = path($symlink_dir,$job_ids->[$job_num],$file_path);
-             say STDERR " SYMLINK $path_to_link $symlink_path";    
+             print STDERR " SYMLINK $path_to_link $symlink_path\n";    
              CORE::symlink $path_to_link, $symlink_path;       
          }  
 } 
@@ -182,8 +180,12 @@ sub _get_job_ids {
     
     my @job_ids ;
     if(defined $groupby_fields){
-        my $groupby_field = $groupby_fields->[0];  # only one group by supported at the moment      
-        $datasource = $datasource->group([$groupby_field],[$id_field],[sub { join("-",@_) } ],["$id_field-group"] );
+        my $groupby_field = $groupby_fields->[0];  # only one group by supported at the moment
+        if( $groupby_field eq $id_field){      
+            $datasource = $datasource->group([$groupby_field],[$id_field],[sub { $_[0] } ],["$id_field-group"] );
+        }else{
+            $datasource = $datasource->group([$groupby_field],[$id_field],[sub { join("-",@_) } ],["$id_field-group"] );
+        }        
         #$self->logger->debug("Symlink - grouped datasource looks like " . $datasource->tsv );
         $id_field = "$id_field-group";
     }
