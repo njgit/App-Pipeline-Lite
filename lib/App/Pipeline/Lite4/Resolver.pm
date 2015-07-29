@@ -273,15 +273,9 @@ sub _add_input_files_to_placeholder_hash {
 
    my @files;
 
-<<<<<<< HEAD
-   my $iter = $dir->iterator( { recurse => 1 } );
-   while( my $path = $iter->() ){
-        next unless $path->is_file;
-=======
    my $iter = $dir->iterator( { recurse => 1 } );  
    while( my $path = $iter->() ){        
         next unless( $path->is_file || $path->is_dir);
->>>>>>> upstream/master
         push( @files, $path);
    }
     #add to placeholder;
