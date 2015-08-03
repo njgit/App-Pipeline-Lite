@@ -9,6 +9,9 @@ sub execute {
     my ($self, $opt, $args) = @_;
     
     eval {
+        # Initiate
+        my $App_Pipeline_Lite = App::Pipeline::Lite4->new( pipeline_dir => $args->[0]);
+
         # Get options
         my $desc ="smoke-test";
         $desc = $App_Pipeline_Lite->util->ask_for_description
@@ -20,7 +23,6 @@ sub execute {
         my $run_info = join " ", "run" . "[ $run_num ]", "[ step-filter: " . $step_filter  . " ]", "[ job-filter: " . $job_filter . " ]";
         
         #Set Options
-        my $App_Pipeline_Lite = App::Pipeline::Lite4->new( pipeline_dir => $args->[0]);
         $App_Pipeline_Lite->util->append_description( $run_info, $desc ); # Write Options to log
         
         $App_Pipeline_Lite->smoke_test(1) if defined($opt->{smoke_test});
