@@ -35,7 +35,7 @@ sub execute {
             my $datasource_path = $opt->{datasource};
             ouch 'App_Pipeline_Lite4_Error', "The datasource path ($datasource_path) is not a file" unless path( $datasource_path)->is_file ;
             $App_Pipeline_Lite->datasource_file( $datasource_path )  ;
-        } elseif( defined $opt->{run_num}){
+        } elsif( defined $opt->{run_num}){
             my $datasource_path = $App_Pipeline_Lite->datasource_from_run($run_num);
             ouch 'App_Pipeline_Lite4_Error', "The datasource path ($datasource_path) defined by run_num is not a file" unless path( $datasource_path)->is_file ;
             $App_Pipeline_Lite->datasource_file($datasource_path);
