@@ -492,7 +492,7 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                }
                my $job_filter = $self->job_filter;
                @stepfiles = @stepfiles[@$job_filter] if defined ( $job_filter );
-               $output_files = join ' ', @stepfiles;
+               $output_files = join ' ', @stepfiles if defined ( @stepfiles );
                #warn "STEPFILES: $output_files";
 
             }
