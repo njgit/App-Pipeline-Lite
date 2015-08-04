@@ -26,8 +26,8 @@ sub execute {
         $App_Pipeline_Lite->util->append_description( $run_info, $desc ); # Write Options to log
         
         $App_Pipeline_Lite->smoke_test(1) if defined($opt->{smoke_test});
-        defined $opt->{steps} ? $App_Pipeline_Lite->step_filter_str($step_filter);
-        defined $opt->{jobs} ? $App_Pipeline_Lite->job_filter_str( $job_filter );
+        $App_Pipeline_Lite->step_filter_str($step_filter) if defined $opt->{steps};
+        $App_Pipeline_Lite->job_filter_str( $job_filter ) if defined $opt->{jobs};
         
         $App_Pipeline_Lite->run_num($run_num);
         
