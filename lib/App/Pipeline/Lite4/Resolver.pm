@@ -273,8 +273,8 @@ sub _add_input_files_to_placeholder_hash {
 
    my @files;
 
-   my $iter = $dir->iterator( { recurse => 1 } );  
-   while( my $path = $iter->() ){        
+   my $iter = $dir->iterator( { recurse => 1 } );
+   while( my $path = $iter->() ){
         next unless( $path->is_file || $path->is_dir);
         push( @files, $path);
    }
@@ -478,21 +478,18 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                my @stepfiles;
                my $jobs = $job_map_hash->{$grouped_jobs_id};
                for my $job_num ( @$jobs){
-
                    if( $output_run_dir[0] eq 'datasource' ) {
                       my $t = $self->pipeline_datasource;
                       my @datasource_rows = $t->col( $output_run_dir[1] );
                       push( @stepfiles,$datasource_rows[$job_num] );
                   }else{
-
-
-                   push( @stepfiles, $self->_generate_file_output_location($job_num, \@output_run_dir)->stringify);
+                   push( @stepfiles, $self->_generate_file_output_location($job_num, \@output_run_dir)->stringify );
                   }
 
                }
                my $job_filter = $self->job_filter;
                @stepfiles = @stepfiles[@$job_filter] if defined ( $job_filter );
-               $output_files = join ' ', @stepfiles if @stepfiles;
+               $output_files = defined $stepfiles[0] ? join ' ', @stepfiles : "";
                #warn "STEPFILES: $output_files";
 
             }
