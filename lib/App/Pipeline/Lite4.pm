@@ -274,15 +274,13 @@ sub external_dispatch {
     
     my $pipeline_graph_file = $self->pipeline_graph_file->absolute;
     
-    my $pipeline_dir = $self->pipeline_dir->absolute->stringify;
-    ouch 'App_Pipeline_Lite4_Error', "Dispatcher does not exist at $dispatcher_exe" 
-     unless $dispatcher_exe->exists;
+  # ouch 'App_Pipeline_Lite4_Error', "Dispatcher does not exist at $dispatcher_exe" 
+  #  unless $dispatcher_exe->exists;
     
      my $dispatcher_path_str = $dispatcher_exe->absolute->stringify;     
     ouch  'App_Pipeline_Lite4_Error', "Dispatcher app is not executable" 
       unless ( -x $dispatcher_path_str);  
       
-    #my $dispatcher_cmd =  qq{ $dispatcher_path_str  $pipeline_dir };
     my $dispatcher_cmd =  qq{ dispatcher_opt->absolute->stringify  $pipeline_graph_file };
     system( $dispatcher_cmd );    
 }
