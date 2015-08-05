@@ -270,7 +270,7 @@ sub external_dispatch {
    # TYPE  Path::Tiny :$dispatcher_exe )  {
     my $self = shift;
     my $dispatcher_opt = shift;
-    my $dispatcher_exe = split / / $dispatcher_cmd;
+    my ($dispatcher_exe, $opts) = split / /, $dispatcher_opt;
     
     my $pipeline_graph_file = $self->pipeline_graph_file->absolute;
     
