@@ -131,7 +131,7 @@ sub dispatch_lsf {
 	 	$args{-J} = $lsf_job_name;
 		$args{-R} = "span[hosts=1] select[mem>$mem] rusage[mem=$mem]" if defined($mem);
 		$args{-M} = $mem if defined($mem); # in KB, but we * by 1000 not 1024, since esub requires it to be less.
-		$args{-o} = '/nfs/users/nfs_r/rg12/lustre110/Pipeline/lsfout/out-%J';
+		$args{-o} = '${HOME}/lsfout/out-%J';
 		$args{'-q'} = $queue if defined($queue);
 		$args{'-n'} = $cores if defined($cores);
 		print "\n---SUBMISSION---\n";
