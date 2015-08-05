@@ -17,12 +17,6 @@
 #	CREATED: 24/02/13 12:05:44
 #	REVISION: 11/11/2014 19:40:00
 #===============================================================================
-
-use Modern::Perl;
-use YAML::Any;
-use Graph;
-use Path::Tiny;
-
 # BASIC BLOCKING DISPATCHER
 #
 # Currently read yaml file into graph - then go through the job_ids and see
@@ -30,63 +24,57 @@ use Path::Tiny;
 # and keep going until no graph left. Probably better way to do this breadth first
 # and focus on leaves
 
-die "Did not receive plite yaml file " unless defined($ARGV[0]);
-my $plite_yaml = path($ARGV[0]);
-my $pipeline_graph_and_jobs_yaml = $plite_yaml->slurp;
-my $graph_and_jobs = Load( $pipeline_graph_and_jobs_yaml );
-my $pipeline_name = $plite_yaml->basename('.graph.yaml');
+use Modern::Perl;
+use YAML::Any;
+use Graph;
+use Path::Tiny;
 
-my $graph = make_graph( $graph_and_jobs);
-#my @job_ids = $graph->vertices;
-my @job_ids = $graph->topological_sort;
+use App::Rad;
+App::Rad->run();
 
-### Select dispatcher ###
-dispatch_simple(\@job_ids, $graph);
-#dispatch_lsf(\@job_ids, $graph, $pipeline_name);
-
-sub make_graph {
-	my $jobs = shift;
-	my $graph = Graph->new;
-
-	foreach my $job_num (keys %$jobs){
-		my $job = $jobs->{$job_num};
-		foreach my $stepinjob ( keys %$job ) {
-			my $dependents = $job->{$stepinjob}->{dependents};
-			if( @$dependents > 0 ){
-				foreach my $dependency (@$dependents) {
-					$graph->add_edge( $dependency, "$job_num.$stepinjob" );	 #print "added	$dependency - $job_num.$stepinjob	 to graph\n";
-				}
-			}else{
-				$graph->add_vertex("$job_num.$stepinjob"); #print "add vertex $job_num.$stepinjob\n";
-			}
-		}
-	}
-	return $graph;
+sub setup {
+	my $c = shift;
+	$c->register_commands( {
+		simple => "run in shell",          
+		lsf => "dispatch to lsf"
+         } );
 }
+sub simple {
+	my $c = shift;
+	$c->getopt( 'yaml|y=s') or $c->execute('usage') and return undef;
+	
+	my $plite_yaml = path($c->options->{'yaml'});
+	my $pipeline_graph_and_jobs_yaml = $plite_yaml->slurp;
+	my $graph_and_jobs = Load( $pipeline_graph_and_jobs_yaml );
 
-#######################################
-#             DISPATCHERS             #
-#######################################
+	my $graph = make_graph( $graph_and_jobs);
+	my @job_ids = $graph->topological_sort;
 
-sub dispatch_simple {
-  	my ($job_ids, $graph ) = @_;
   	my $job_id;
-	while( @$job_ids > 0 ){
-    	$job_id = shift @$job_ids;
+	while( @job_ids > 0 ){
+    	$job_id = shift @job_ids;
     	if( $graph->predecessors($job_id) > 0 ) {
-    		push ( @$job_ids, $job_id); #goes back on the end   #warn "That one had a dependency put to back";
+    		push ( @job_ids, $job_id); #goes back on the end   #warn "That one had a dependency put to back";
     	}else{
-
         	my ($job,$step) = split(/\./,$job_id); #print "system $job_id\n";
         	#print "Dispatch job $job and step $step:\n " . $graph_and_jobs->{ $job }->{$step}->{cmd}, "\n" ;
         	system( $graph_and_jobs->{ $job }->{$step}->{cmd} );
     		$graph->delete_vertex($job_id);
-   	 	}
+		}
 	}
 }
+sub lsf {
+	my $c = shift;
+	$c->getopt( 'yaml|y=s', 'output|o=s' ) or $c->execute('usage') and return undef;
+	
+	my $plite_yaml = path($c->options->{'yaml'});
+	my $pipeline_graph_and_jobs_yaml = $plite_yaml->slurp;
+	my $graph_and_jobs = Load( $pipeline_graph_and_jobs_yaml );
+	my $pipeline_name = $plite_yaml->basename('.graph.yaml');
 
-sub dispatch_lsf {
-	my ($job_ids, $graph, $pipeline_name ) = @_;
+	my $graph = make_graph( $graph_and_jobs);
+	my @job_ids = $graph->topological_sort;
+
 	my $job_id;
 
 	use Time::Stamp qw(-stamps);
@@ -95,13 +83,13 @@ sub dispatch_lsf {
 	my $job_manager = LSF::JobManager->new( -q => 'normal', -M => "500" ,-R => "span[hosts=1] select[mem>500] rusage[mem=500]" , -L => "/usr/local/bin/bash");#, -L => '/bin/bash' );
 
 	my $timestamp = gmstamp();
-	foreach my $job_id (@$job_ids) {
+	foreach my $job_id (@job_ids) {
 		$graph->set_vertex_attribute($job_id, 'lsf-job-name', $pipeline_name . "-$job_id-$timestamp" );
 		print STDERR "Set $job_id lsf name to $pipeline_name-$job_id-$timestamp\n"
 	}
 
-	while( @$job_ids > 0 ){
-		$job_id = shift @$job_ids;
+	while( @job_ids > 0 ){
+		$job_id = shift @job_ids;
 
 		my @dependent_jobs = $graph->predecessors($job_id);
 		my $dependency_str;
@@ -131,7 +119,7 @@ sub dispatch_lsf {
 	 	$args{-J} = $lsf_job_name;
 		$args{-R} = "span[hosts=1] select[mem>$mem] rusage[mem=$mem]" if defined($mem);
 		$args{-M} = $mem if defined($mem); # in KB, but we * by 1000 not 1024, since esub requires it to be less.
-		$args{-o} = '${HOME}/lsfout/out-%J';
+		$args{-o} = $c->options->{'yaml'}.'/out-%J';
 		$args{'-q'} = $queue if defined($queue);
 		$args{'-n'} = $cores if defined($cores);
 		print "\n---SUBMISSION---\n";
@@ -146,19 +134,23 @@ sub dispatch_lsf {
 	}
 }
 
-sub dispatch_simple {
-  	my ($job_ids, $graph ) = @_;
-  	my $job_id;
-	while( @$job_ids > 0 ){
-    	$job_id = shift @$job_ids;
-    	if( $graph->predecessors($job_id) > 0 ) {
-    		push ( @$job_ids, $job_id); #goes back on the end   #warn "That one had a dependency put to back";
-    	}else{
 
-        	my ($job,$step) = split(/\./,$job_id); #print "system $job_id\n";
-        	#print "Dispatch job $job and step $step:\n " . $graph_and_jobs->{ $job }->{$step}->{cmd}, "\n" ;
-        	system( $graph_and_jobs->{ $job }->{$step}->{cmd} );
-    		$graph->delete_vertex($job_id);
-   	 	}
+sub make_graph {
+	my $jobs = shift;
+	my $graph = Graph->new;
+
+	foreach my $job_num (keys %$jobs){
+		my $job = $jobs->{$job_num};
+		foreach my $stepinjob ( keys %$job ) {
+			my $dependents = $job->{$stepinjob}->{dependents};
+			if( @$dependents > 0 ){
+				foreach my $dependency (@$dependents) {
+					$graph->add_edge( $dependency, "$job_num.$stepinjob" );	 #print "added	$dependency - $job_num.$stepinjob	 to graph\n";
+				}
+			}else{
+				$graph->add_vertex("$job_num.$stepinjob"); #print "add vertex $job_num.$stepinjob\n";
+			}
+		}
 	}
+	return $graph;
 }
