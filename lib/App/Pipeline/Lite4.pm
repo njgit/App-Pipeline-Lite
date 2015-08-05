@@ -277,7 +277,7 @@ sub external_dispatch {
   # ouch 'App_Pipeline_Lite4_Error', "Dispatcher does not exist at $dispatcher_exe" 
   #  unless $dispatcher_exe->exists;
     
-     my $dispatcher_path_str = $dispatcher_exe->absolute->stringify;     
+     my $dispatcher_path_str = $dispatcher_exe;     
     ouch  'App_Pipeline_Lite4_Error', "Dispatcher app is not executable" 
       unless ( -x $dispatcher_path_str);  
       
