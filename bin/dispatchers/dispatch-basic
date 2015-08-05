@@ -41,8 +41,8 @@ sub setup {
 }
 sub simple {
 	my $c = shift;
-	defined $c->argv->[0] or $c->execute('usage') and return undef;
-	
+	$c->execute('usage') and die "Did not receive plite yaml file " unless defined($c->argv->[0]);
+
 	my $plite_yaml = path($c->argv->[0]);
 	my $pipeline_graph_and_jobs_yaml = $plite_yaml->slurp;
 	my $graph_and_jobs = Load( $pipeline_graph_and_jobs_yaml );
@@ -66,7 +66,7 @@ sub simple {
 sub lsf {
 	my $c = shift;
 	$c->getopt( 'output|o=s' ) or $c->execute('usage') and return undef;
-	die "Did not receive plite yaml file " unless defined($c->argv->[0]);
+	$c->execute('usage') and die "Did not receive plite yaml file " unless defined($c->argv->[0]);
 
 	my $plite_yaml = path($c->argv->[0]);
 	my $pipeline_graph_and_jobs_yaml = $plite_yaml->slurp;
