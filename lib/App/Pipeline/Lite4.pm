@@ -281,7 +281,7 @@ sub external_dispatch {
     ouch  'App_Pipeline_Lite4_Error', "Dispatcher app is not executable" 
       unless ( -x $dispatcher_path_str);  
       
-    my $dispatcher_cmd =  qq{ dispatcher_opt->absolute->stringify  $pipeline_graph_file };
+    my $dispatcher_cmd =  qq{ $dispatcher_opt->absolute->stringify  $pipeline_graph_file };
     system( $dispatcher_cmd );    
 }
 
