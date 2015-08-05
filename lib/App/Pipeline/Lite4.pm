@@ -268,8 +268,9 @@ sub run_pipeline {
 
 sub external_dispatch {
    # TYPE  Path::Tiny :$dispatcher_exe )  {
-    my $self=shift;
-    my $dispatcher_exe=shift;
+    my $self = shift;
+    my $dispatcher_opt = shift;
+    my $dispatcher_exe = split / / $dispatcher_cmd;
     
     my $pipeline_graph_file = $self->pipeline_graph_file->absolute;
     
@@ -282,7 +283,7 @@ sub external_dispatch {
       unless ( -x $dispatcher_path_str);  
       
     #my $dispatcher_cmd =  qq{ $dispatcher_path_str  $pipeline_dir };
-    my $dispatcher_cmd =  qq{ $dispatcher_path_str  $pipeline_graph_file };
+    my $dispatcher_cmd =  qq{ dispatcher_opt->absolute->stringify  $pipeline_graph_file };
     system( $dispatcher_cmd );    
 }
 
