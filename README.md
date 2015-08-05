@@ -1,8 +1,7 @@
 Pipelite (App-Pipeline-Lite)
 =================
 
-Pipelite is a lightweight workflow system developed in a bioinformatics context. Pipelite is still in an 
-experimental phase - Pre Alpha would be the best description.
+Pipelite is a lightweight workflow system developed in a bioinformatics context. Pipelite is still in an experimental phase - Pre Alpha would be the best description.
 
 Installation
 ============
@@ -23,8 +22,7 @@ Then run:
 ```bash 
 plite vsc --editor vim
 ```
-where "vim" could be replaced with your favourite editor. This will open a config file with one line, 
-showing you the config file, which contains one setting - the config variable "editor" set to the current editor. 
+where "vim" could be replaced with your favourite editor along with any options to pass to the editor. This will open a config file with one line, showing you the config file, which contains one setting - the config variable "editor" set to the current editor. 
 
 Add the following line to set the dispatcher
 
@@ -143,9 +141,7 @@ This still produces the raw "command file" that allows you to inspect what will 
 Pipeline and Datasource Specification
 =====================================
 
-This is a list of things that currently will not be warned against, but which will result 
-in strange behaviour (they will be removed from the list as updates are made to warn or 
-allow the behaviour):
+This is a list of things that currently will not be warned against, but which will result in strange behaviour (they will be removed from the list as updates are made to warn or allow the behaviour):
 
 * No dots in datasource names - underscores and hyphens are ok 
   (i.e. no column name "file.gz", use "file-gz" instead)
@@ -160,4 +156,44 @@ away) and other dispatchers targeted to various job management systems are on th
 
 Further Documentation
 =====================
-This will be added soon, along with some typical bioinformatic pipeline examples.
+pipeline commands
+-----------------
+### Cores
+Declare how many cores the step requires in step meta, i.e. `stepname.cores 6`
+
+### Memory
+Declare how much memory (mB) the step requires in step meta, i.e. `stepname.mem 10000`
+
+### Once
+Declare in step definition, i.e. `stepname.once`
+This step is only performed for Job 0 or first job if a range is specified.
+
+### Output
+Declare output files in step meta, i.e.
+```bash
+stepname. do something
+stepname.output list of output files
+```
+This is only required if files are not specifically name in step.
+
+e.g.
+```bash
+createfile. touch outfile1 outfile2
+createfile.output outfile1 outfile2
+```
+Now outfile1 and oufile2 can be called as `[% createfile.output1 %]` and `[% createfile.output2 %]` respectively.
+
+### Groupby
+Declare in step definition, i.e. `stepname.groupby.Column`
+
+To list the files/datasource options for a group use `[% groupby.Column.stepname.file %]`
+
+###jobs
+The `jobs` command is used within a placeholder to list a file/paramater for all jobs in a run.
+
+e.g.
+```bash
+[% jobs.createfile.output1 %]
+```
+
+This will list the all output1 files created by the createfile step for all jobs in the run.
