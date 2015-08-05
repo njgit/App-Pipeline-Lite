@@ -41,7 +41,7 @@ sub setup {
 }
 sub simple {
 	my $c = shift;
-	$c->execute('usage') and die "Did not receive plite yaml file " unless defined($c->argv->[0]);
+	die "Did not receive plite yaml file " unless defined($c->argv->[0]);
 
 	my $plite_yaml = path($c->argv->[0]);
 	my $pipeline_graph_and_jobs_yaml = $plite_yaml->slurp;
@@ -66,7 +66,7 @@ sub simple {
 sub lsf {
 	my $c = shift;
 	$c->getopt( 'output|o=s' ) or $c->execute('usage') and return undef;
-	$c->execute('usage') and die "Did not receive plite yaml file " unless defined($c->argv->[0]);
+	die "Did not receive plite yaml file " unless defined($c->argv->[0]);
 
 	my $plite_yaml = path($c->argv->[0]);
 	my $pipeline_graph_and_jobs_yaml = $plite_yaml->slurp;
@@ -120,7 +120,7 @@ sub lsf {
 	 	$args{-J} = $lsf_job_name;
 		$args{-R} = "span[hosts=1] select[mem>$mem] rusage[mem=$mem]" if defined($mem);
 		$args{-M} = $mem if defined($mem); # in KB, but we * by 1000 not 1024, since esub requires it to be less.
-		$args{-o} = $c->options->{'yaml'}.'/out-%J';
+		$args{-o} = $c->options->{'output'}.'/out-%J';
 		$args{'-q'} = $queue if defined($queue);
 		$args{'-n'} = $cores if defined($cores);
 		print "\n---SUBMISSION---\n";
