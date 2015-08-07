@@ -29,112 +29,27 @@ use YAML::Any;
 use Graph;
 use Path::Tiny;
 
-use App::Rad;
-App::Rad->run();
+die "Did not receive plite yaml file " unless defined($ARGV[0]);
 
-sub setup {
-	my $c = shift;
-	$c->register_commands( {
-		simple => "run in shell",          
-		lsf => "dispatch to lsf"
-         } );
-}
-sub simple {
-	my $c = shift;
-	die "Did not receive plite yaml file " unless defined($c->argv->[0]);
+my $plite_yaml = path($ARGV[0]);
+my $pipeline_graph_and_jobs_yaml = $plite_yaml->slurp;
+my $graph_and_jobs = Load( $pipeline_graph_and_jobs_yaml );
 
-	my $plite_yaml = path($c->argv->[0]);
-	my $pipeline_graph_and_jobs_yaml = $plite_yaml->slurp;
-	my $graph_and_jobs = Load( $pipeline_graph_and_jobs_yaml );
+my $graph = make_graph( $graph_and_jobs);
+my @job_ids = $graph->topological_sort;
 
-	my $graph = make_graph( $graph_and_jobs);
-	my @job_ids = $graph->topological_sort;
-
-  	my $job_id;
-	while( @job_ids > 0 ){
-    	$job_id = shift @job_ids;
-    	if( $graph->predecessors($job_id) > 0 ) {
-    		push ( @job_ids, $job_id); #goes back on the end   #warn "That one had a dependency put to back";
-    	}else{
-        	my ($job,$step) = split(/\./,$job_id); #print "system $job_id\n";
-        	#print "Dispatch job $job and step $step:\n " . $graph_and_jobs->{ $job }->{$step}->{cmd}, "\n" ;
-        	system( $graph_and_jobs->{ $job }->{$step}->{cmd} );
-    		$graph->delete_vertex($job_id);
-		}
+my $job_id;
+while( @job_ids > 0 ){
+    $job_id = shift @job_ids;
+    if( $graph->predecessors($job_id) > 0 ) {
+    	push ( @job_ids, $job_id); #goes back on the end   #warn "That one had a dependency put to back";
+    }else{
+        my ($job,$step) = split(/\./,$job_id); #print "system $job_id\n";
+        #print "Dispatch job $job and step $step:\n " . $graph_and_jobs->{ $job }->{$step}->{cmd}, "\n" ;
+        system( $graph_and_jobs->{ $job }->{$step}->{cmd} );
+    	$graph->delete_vertex($job_id);
 	}
 }
-sub lsf {
-	my $c = shift;
-	$c->getopt( 'output|o=s' ) or $c->execute('usage') and return undef;
-	die "Did not receive plite yaml file " unless defined($c->argv->[0]);
-
-	my $plite_yaml = path($c->argv->[0]);
-	my $pipeline_graph_and_jobs_yaml = $plite_yaml->slurp;
-	my $graph_and_jobs = Load( $pipeline_graph_and_jobs_yaml );
-	my $pipeline_name = $plite_yaml->basename('.graph.yaml');
-
-	my $graph = make_graph( $graph_and_jobs);
-	my @job_ids = $graph->topological_sort;
-
-	my $job_id;
-
-	use Time::Stamp qw(-stamps);
-	use LSF RaiseError => 0, PrintError => 1, PrintOutput => 0;
-
-	my $job_manager = LSF::JobManager->new( -q => 'normal', -M => "500" ,-R => "span[hosts=1] select[mem>500] rusage[mem=500]" , -L => "/usr/local/bin/bash");#, -L => '/bin/bash' );
-
-	my $timestamp = gmstamp();
-	foreach my $job_id (@job_ids) {
-		$graph->set_vertex_attribute($job_id, 'lsf-job-name', $pipeline_name . "-$job_id-$timestamp" );
-		print STDERR "Set $job_id lsf name to $pipeline_name-$job_id-$timestamp\n"
-	}
-
-	while( @job_ids > 0 ){
-		$job_id = shift @job_ids;
-
-		my @dependent_jobs = $graph->predecessors($job_id);
-		my $dependency_str;
-
-		if( @dependent_jobs > 0 ) {
-			print STDERR "Found dependent jobs for job $job_id: jobs(s) @dependent_jobs\n";
-			my @dependencies;
-			foreach my $dependent_job (@dependent_jobs ) {
-				my $lsf_job_name = $graph->get_vertex_attribute( $dependent_job, 'lsf-job-name');
-				push( @dependencies, "done($lsf_job_name)");
-			}
-			$dependency_str = join('&&', @dependencies);
-
-			print "LSF dependency string: ", $dependency_str, "\n";
-	 	} else { print "No dependent job for $job_id.\n"}
-
-		#Give the job a name with -J
-		my $lsf_job_name = $graph->get_vertex_attribute( $job_id, 'lsf-job-name' );
-		my ($job,$step) = split(/\./,$job_id);
-	 	my ($cmd,$errorfile) = split(/2>/,$graph_and_jobs->{ $job }->{$step}->{cmd});
-   		my $mem = $graph_and_jobs->{ $job }->{$step}->{mem};
-   		my $queue = $graph_and_jobs->{ $job }->{$step}->{queue};
-   		my $cores = $graph_and_jobs->{ $job }->{$step}->{cores};
-   		my %args;
-   		$args{-e} = $errorfile if defined($errorfile);
-	 	$args{-w} = $dependency_str if @dependent_jobs >0;
-	 	$args{-J} = $lsf_job_name;
-		$args{-R} = "span[hosts=1] select[mem>$mem] rusage[mem=$mem]" if defined($mem);
-		$args{-M} = $mem if defined($mem); # in KB, but we * by 1000 not 1024, since esub requires it to be less.
-		$args{-o} = $c->options->{'output'}.'/out-%J';
-		$args{'-q'} = $queue if defined($queue);
-		$args{'-n'} = $cores if defined($cores);
-		print "\n---SUBMISSION---\n";
-		if(	defined( $cmd ) ){
-			print "CMD:\n$cmd\n";
-		}else{
-			print "CMD IS NOT DEFINED - (groupby or once step perhaps?)\n";
-			$cmd = "echo nothing > stdout"
-		}
-		print "Submit $lsf_job_name with :\n" , join " ",	%args,"\n\n";
-		$job_manager->submit(%args, $cmd);
-	}
-}
-
 
 sub make_graph {
 	my $jobs = shift;
