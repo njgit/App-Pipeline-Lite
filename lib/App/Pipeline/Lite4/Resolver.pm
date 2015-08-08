@@ -7,7 +7,7 @@ use Ouch;
 use Path::Tiny;
 use Types::Path::Tiny qw/Path AbsPath/;
 use YAML::Any;
-use List::Util qw(max reduce);
+use List::Util qw(max reduce uniq);
 use Data::Table;
 use Data::Dumper;
 use App::Pipeline::Lite4::Template::TinyMod;
@@ -310,6 +310,99 @@ sub _placeholder_hash_add_item{
    }
 }
 
+# this gives the grouping index when there is 
+# job filter present 
+#
+# if we have a job filter it makes grouping weird
+# we want to put the first g jobs that are the groupbys (g = num of groups)
+# but if you have a job filter then you might not have all the groups but you 
+# still want to maintain something like this:
+
+=comment
+This function gives the grouping index when there is a job filter present. To see why we need to do this
+consider the following example of how where we want our groupby jobs to end up - i.e. for 3 groups we want
+them to have their output in the first 3 jobs. In the following example, we have filtered all of group A
+jobs. So there will be nothing in job0.
+
+The group order is set by a alphanumeric sort of the group names.
+
+Grp  jobid  jobs-executed   jobs-in-output
+  A  0                            ( nothing in job0)
+  B  1 -->   x             1 ---> (group 2 in job1 by sorting order)
+  A  2                     5 ---> (group 3 in job2 by sorting order)
+  A  3  
+  B  4 -->   x
+  C  5 -->   x 
+
+So we have to construct first this job_ids to group numbers:
+
+  [ 0 --> 1, 1 --> 2, 2 --> 1, 3 --> 1, 4 --> 2, 5 --> 3 ]
+
+Then we have to do filter out the jobs
+  
+   [  1 --> 2, 4 --> 2, 5 --> 3 ]
+ 
+Then finally we have to uniq the values and collapse them:
+
+  [  1 --> 2, 4 --> 3, 5 --> 0]
+
+The 5 --> 0 is the third run that is executed , and it is given a default group_idx of zero, because we don't actually
+care about how this is executed and it should be pruned in the groupby pruning step.
+ 
+ So then we now have a hash, to give back the right group_idx for a particular run.
+ 
+ Of course we require the correct behaviour in the groupby pruning to see this work properly.   
+=cut 
+#
+#
+
+
+sub get_grouping_indexes{
+    my $self=shift;
+    my $job_filter = shift;
+    my $job_map_hash = shift;
+    my $JOB_NUM = shift;
+    my @grouped_jobs = sort keys %$job_map_hash;
+    my %job_group_order_hash ;
+    my $group_order = 0;
+    
+    my %job_filter_hash = map{ $_ => 1 } @$job_filter
+    
+    # construct hash [ job_num -> group_order] e.g { 0 -> 0 , 1 -> 0, 2 -> 0, 3 -> 1, 4 -> 1  }
+    foreach my $grouped_jobs (@grouped_jobs){
+        my $jobs_in_group = $job_map_hash->{$grouped_jobs};
+        foreach my $job_in_group (@$jobs_in_group){
+            $job_group_order_hash{$job_in_group} = $group_order;
+        }
+        $group_order++;
+    }
+    # leave only the executed jobs
+    foreach my $job (keys %job_group_order_hash){
+        if( $job_filter_hash{$job} ){
+            delete $job_group_order_hash{$job};
+        }
+    }
+    
+    my @groups_in_job_filter = uniq( sort {$a<=>$b} values(%job_group_order_hash));
+    my %job_group_order_exec_hash;
+    my $i=0;
+    foreach my $job ( sort{ $a <=> $b} keys %job_group_order_hash){
+        if(defined $groups_in_job_filter[$i]){
+            $job_group_order_exec_hash{$job} = $groups_in_job_filter[$i];
+        }else{ # higher jobs dont just get the first group
+            $job_group_order_exec_hash{$job} = 0; 
+        }
+        $i++;
+    }
+    
+    # if JOB_NUM is executed
+    if( exists( $job_group_order_exec_hash{$JOB_NUM} ) ){
+        return $job_group_order_exec_hash{$JOB_NUM};
+    }else{
+        return undef;
+    }    
+}
+
 # this method could be broken down into
 # _add_steps_to_placeholder_hash
 # _add_all_job_steps_to_placeholder_hash
@@ -448,10 +541,20 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                # This gives a hash e.g.: {groupA=> [0,1,2,3], groupB=>[4,5,6]}
                #warn Dumper $job_map_hash;
                
+               
+               my $job_filter = $self->job_filter;
+               my %job_filter_hash = map{ $_ => 1 } @$job_filter if defined($job_filter);
+               
                # order the groupnames - so that we always have the same groups in the same jobs
                my @grouped_jobs = sort keys %$job_map_hash;
                my $grouped_job_idx;               
                $grouped_job_idx = ($JOB_NUM <= $#grouped_jobs) ? $JOB_NUM : 0;
+               
+               # if there is a job filter then we have to get the right group index 
+               if( defined $job_filter){
+                   $grouped_job_idx = get_grouping_indexes($job_filter,$job_map_hash,$JOB_NUM); 
+               }
+                              
                # We are only interested in the for job numbers higher, then you get the first group
                # this will be implemented later so that you can chose
                # which group thought someihtng like
@@ -459,9 +562,6 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                my $grouped_jobs_id = $grouped_jobs[ $grouped_job_idx ];
                my @placeholder_resolved_paths;
                my $jobs = $job_map_hash->{$grouped_jobs_id};
-               
-               my $job_filter = $self->job_filter;
-               my %job_filter_hash = map{ $_ => 1 } @$job_filter if defined($job_filter);
                
                for my $job_num ( @$jobs){
                    if( defined($job_filter) ){ 
