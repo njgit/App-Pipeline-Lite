@@ -311,7 +311,7 @@ sub _placeholder_hash_add_item{
 }
 
 
-=comment
+=function description
 This function gives the grouping index when there is a job filter present. To see why we need to do this
 consider the following example of how where we want our groupby jobs to end up - i.e. for 3 groups we want
 them to have their output in the first 3 jobs. In the following example, we have filtered all of group A
@@ -395,7 +395,7 @@ sub get_grouping_indexes{
 }
 
 
-=function
+=function description
 
 # For a placeholder such as [% step1.myfilename %], this function generates a full pathname that will be substituted for this placeholder
 # ( e.g  "/home/user/pipelineA/output/run1/step1/myfilename")
