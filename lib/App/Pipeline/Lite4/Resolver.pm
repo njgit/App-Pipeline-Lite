@@ -323,6 +323,21 @@ sub _placeholder_hash_add_item{
 # groupby.type=A.file.txt or something like that.
 # at the moment if this is done, then one group is given (the one where the group values are top of an ascending perl sort
 
+#  Each job can have one to multiple steps. This function handles (for any particular job) 
+#  transforming (resolving) the placeholder into actual pathnames. 
+#  There are currently three placeholder cases:
+#     1. stepX.fileY 
+#     2. jobs.stepX.fileY
+#     3. groupby.groupby-field.stepX.fileY
+#
+#  Specifics:
+#  case 1: 
+#    a) Can have a "once condition" - meaning that the step commands will only be executed in one of the jobs(i.e. once).
+#       A job number has to be chosen for this one execution, and the rule is that it's the minimum job number. 
+#       This means generally when executing over a datasource, only the first job - job0 will contain the  
+#       outputs from a step with a once condition.
+
+
 sub _add_steps_in_step_struct_to_placeholder_hash {
    #TYPES: ( Num :$job_num ){
    my $self = shift;
