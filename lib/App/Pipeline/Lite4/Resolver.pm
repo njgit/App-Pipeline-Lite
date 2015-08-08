@@ -341,10 +341,8 @@ Finally we have to uniq the values and collapse them:
 
 The 5 --> 0 is the third run that is executed , and it is given a default group_idx of zero, because we don't actually
 care about how this is executed and it should be pruned in the groupby pruning step.
- 
- So then we now have a hash, to give back the right group_idx for a particular run.
- 
- Of course we require the correct behaviour in the groupby pruning to see this work properly.   
+Now have a hash that gives back the right group_idx for a particular run.
+Of course we require the correct behaviour in the groupby pruning to see this work properly.   
 =cut 
 
 sub get_grouping_indexes{
