@@ -327,15 +327,15 @@ Grp  jobid  jobs-executed   jobs-in-output
   B  4 -->   x
   C  5 -->   x 
 
-So we have to construct first this job_ids to group numbers:
+So we have to construct job_ids to group numbers:
 
   [ 0 --> 1, 1 --> 2, 2 --> 1, 3 --> 1, 4 --> 2, 5 --> 3 ]
 
-Then we have to do filter out the jobs
+Then we have to do filter out non executed jobs (using the job filter that lists all the jobs to be executed)
   
    [  1 --> 2, 4 --> 2, 5 --> 3 ]
  
-Then finally we have to uniq the values and collapse them:
+Finally we have to uniq the values and collapse them:
 
   [  1 --> 2, 4 --> 3, 5 --> 0]
 
