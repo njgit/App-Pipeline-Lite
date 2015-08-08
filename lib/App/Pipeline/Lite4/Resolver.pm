@@ -15,7 +15,6 @@ use App::Pipeline::Lite4::Util;
 use Storable qw(dclone);
 extends 'App::Pipeline::Lite4::Base';
 
-#has pipeline_datasource  => ( isa => 'Data::Table', is => 'rw', lazy_build =>1 );
 has placeholder_hash     => ( isa =>'HashRef', is => 'rw', default => sub {return {}});
 has current_run_num => ( isa => 'Num|Undef', is => 'rw');
 has current_run_dir => (isa => Path, is =>'rw', lazy_build => 1);
@@ -23,20 +22,8 @@ has pipeline_step_struct => ( isa => 'HashRef' , is => 'rw', lazy_build => 1 );
 has pipeline_step_struct_resolved => ( isa => 'HashRef' , is => 'rw', default => sub {{}}  );
 has run_num_dep  => ( isa => 'Num|Undef', is => 'rw');
 has tot_jobs => ( isa => 'Num', is => 'ro', lazy_build => 1);
-#has job_filter_str  => ( isa => 'Str|Undef', is =>'rw');
 has job_filter => ( isa  => 'ArrayRef|Undef', is =>'rw', lazy_build => 1 );
-
-#has step_filter_str => ( isa => 'Str|Undef', is => 'rw'); in base
 has step_filter => ( isa => 'ArrayRef|Undef' , is => 'rw', lazy_build =>1 );
-
-
-#sub _build_pipeline_datasource {
-#    my $self = shift;
-#    my $datasourcefile = path( $self->datasource_file )->absolute;
-#    ouch 'badfile', "Need to provide datasource file location\n" unless defined( $datasourcefile);
-#    #my $t =  App::Pipeline::Lite2::Datasource->new( datasource_file => $datasourcefile );
-#    my $t = Data::Table::fromTSV( $datasourcefile->stringify );
-#}
 
 sub _build_pipeline_step_struct {
      my $self = shift;
@@ -58,7 +45,7 @@ sub _build_job_filter  {
     my $self= shift;
 
     #check the jobs don't exceed the datasource
-    my $ds_rows = $self-> pipeline_datasource->nofRow;
+    my $ds_rows = $self->pipeline_datasource->nofRow;
 
     if( defined $self->job_filter_str ) {
         #my @jobs_to_keep = $self->job_filter_str->split('\s+');
@@ -257,7 +244,6 @@ sub _add_software_to_placeholder_hash {
     foreach my $software_name ( keys %{ $self->software_ini->{_} }  ) {
         $self->_placeholder_hash_add_item(  "software.$software_name", $self->software_ini->{_}->{$software_name} );
     }
-
 }
 
 
@@ -311,7 +297,7 @@ sub _placeholder_hash_add_item{
 }
 
 
-=function description
+=method 
 This function gives the grouping index when there is a job filter present. To see why we need to do this
 consider the following example of how where we want our groupby jobs to end up - i.e. for 3 groups we want
 them to have their output in the first 3 jobs. In the following example, we have filtered all of group A
@@ -395,8 +381,7 @@ sub get_grouping_indexes{
 }
 
 
-=function description
-
+=method 
 # For a placeholder such as [% step1.myfilename %], this function generates a full pathname that will be substituted for this placeholder
 # ( e.g  "/home/user/pipelineA/output/run1/step1/myfilename")
 #
@@ -845,5 +830,4 @@ sub _last_run_number {
     $run_num = 0 unless (defined $run_num);
     return $run_num;
 }
-
 1;
