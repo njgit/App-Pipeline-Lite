@@ -477,23 +477,26 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                my $grouped_jobs_id = $grouped_jobs[ $grouped_job_idx ];
                my @stepfiles;
                my $jobs = $job_map_hash->{$grouped_jobs_id};
+               
+               my $job_filter = $self->job_filter;
+               my %job_filter_hash = map{ $_ => 1 } @$job_filter if defined($job_filter);
+               
                for my $job_num ( @$jobs){
+                   if( defined($job_filter) ){ 
+                       #skip adding into @stepfiles if job is in job filter
+                       next unless exists($job_filter_hash{$job_num} );
+                   }
                    if( $output_run_dir[0] eq 'datasource' ) {
                       my $t = $self->pipeline_datasource;
                       my @datasource_rows = $t->col( $output_run_dir[1] );
                       push( @stepfiles,$datasource_rows[$job_num] );
                   }else{
                    push( @stepfiles, $self->_generate_file_output_location($job_num, \@output_run_dir)->stringify );
-                  }
-
+                  }  
                }
-               my $job_filter = $self->job_filter;
-               @stepfiles = @stepfiles[@$job_filter] if defined ( $job_filter );
-               $output_files = defined $stepfiles[0] ? join ' ', @stepfiles : "";
+               $output_files = join ' ', @stepfiles;
                #warn "STEPFILES: $output_files";
-
             }
-
             # add to placeholder hash - if there is something to add
             if( defined( $output_files ) ){
                 $self->_placeholder_hash_add_item( $placeholder, $output_files); #in order key,value
