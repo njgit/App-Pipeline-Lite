@@ -7,7 +7,7 @@ use Ouch;
 use Path::Tiny;
 use Types::Path::Tiny qw/Path AbsPath/;
 use YAML::Any;
-use List::Util qw(max reduce uniq);
+use List::Util qw(max reduce);
 use Data::Table;
 use Data::Dumper;
 use App::Pipeline::Lite4::Template::TinyMod;
@@ -353,8 +353,9 @@ sub get_grouping_indexes{
     my @grouped_jobs = sort keys %$job_map_hash;
     my %job_group_order_hash ;
     my $group_order = 0;
-    
-    my %job_filter_hash = map{ $_ => 1 } @$job_filter
+    #my $util = App::Pipeline::Lite4::Util->new;            
+      
+    my %job_filter_hash = map{ $_ => 1 } @$job_filter;
     
     # construct hash [ job_num -> group_order] e.g { 0 -> 0 , 1 -> 0, 2 -> 0, 3 -> 1, 4 -> 1  }
     foreach my $grouped_jobs (@grouped_jobs){
@@ -366,53 +367,45 @@ sub get_grouping_indexes{
     }
     # leave only the executed jobs
     foreach my $job (keys %job_group_order_hash){
-        if( $job_filter_hash{$job} ){
+        unless( exists( $job_filter_hash{$job} ) ){
             delete $job_group_order_hash{$job};
         }
     }
-    
-    my @groups_in_job_filter = uniq( sort {$a<=>$b} values(%job_group_order_hash));
+    my @sorted_groups_in_job_filter = sort {$a<=>$b} values(%job_group_order_hash);
+    my @groups_in_job_filter = App::Pipeline::Lite4::Util::uniq( @sorted_groups_in_job_filter );
+    #warn Dumper @groups_in_job_filter;
     my %job_group_order_exec_hash;
     my $i=0;
     foreach my $job ( sort{ $a <=> $b} keys %job_group_order_hash){
         if(defined $groups_in_job_filter[$i]){
             $job_group_order_exec_hash{$job} = $groups_in_job_filter[$i];
-        }else{ # higher jobs dont just get the first group
+        }else{ # higher jobs just get the first group
             $job_group_order_exec_hash{$job} = 0; 
         }
         $i++;
     }
-    
+    #warn Dumper "job exec group: ";
+    #warn Dumper %job_group_order_exec_hash;
     # if JOB_NUM is executed
     if( exists( $job_group_order_exec_hash{$JOB_NUM} ) ){
         return $job_group_order_exec_hash{$JOB_NUM};
     }else{
-        return undef;
+        return 0;
     }    
 }
 
-# this method could be broken down into
-# _add_steps_to_placeholder_hash
-# _add_all_job_steps_to_placeholder_hash
-# or leave it like this, except call it _add_steps_to_placeholder_hash
-# as we are using the same mechanism to generate the file locations.
-#
-# this is a horrible function and needs to be fixed and refactored in someway
-# the reason we loop over all jobs is because any job can still refer tot_jobs
-# groupby and jobs placeholders if they wish... not entirely true for groupby
-# we would have to bring in the syntax to allow a specific group to be instantiated using
-# groupby.type=A.file.txt or something like that.
-# at the moment if this is done, then one group is given (the one where the group values are top of an ascending perl sort
 
-# For a placeholder such as [% step1.myfilename %], this function generates a full pathname that is substituted for this placeholder
-#  such as "/home/user/pipelineA/output/run1/step1/myfilename"
+=function
+
+# For a placeholder such as [% step1.myfilename %], this function generates a full pathname that will be substituted for this placeholder
+# ( e.g  "/home/user/pipelineA/output/run1/step1/myfilename")
 #
-#  Each job can have one to multiple steps. This function handles (for any particular job) 
-#  transforming (resolving) the placeholder into actual pathnames. 
+#  Each job can have one to multiple steps. Each step can have several placeholders. This function handles (for any particular job) 
+#  transforming (resolving) the placeholder into actual pathname(s). 
 #  There are currently three placeholder cases:
-#     1. stepX.fileY 
-#     2. jobs.stepX.fileY
-#     3. groupby.groupby-field.stepX.fileY
+#     1. stepX.fileY  --> gets resolved to a single pathname
+#     2. jobs.stepX.fileY  --> gets resolved to a list of pathnames 
+#     3. groupby.groupby-field.stepX.fileY --> gets resolved to a list of pathname(s) dependent on the groupby field
 #
 #  Specifics:
 #  case 1: 
@@ -420,6 +413,26 @@ sub get_grouping_indexes{
 #       A job number has to be chosen for this one execution, and the rule is that it's the minimum job number. 
 #       This means generally when executing over a datasource, only the first job - job0 will contain the  
 #       outputs from a step with a once condition.
+
+Essential to remember that this function is being called for every job in the datasource:
+Grp  jobid  jobs-executed   
+  A  0 -->             
+  B  1 -->   x            
+  A  2 -->                 
+  A  3 --> 
+  B  4 -->   x
+  C  5 -->   x 
+Jobs are then filtered later to determine what actually gets executed. See the _resolve function.
+
+Currently we do not support properly groupby under job filtering. Some work towards this is in the get_grouping_indexes function.
+
+The way it seems like this might work is:
+   1. Resolve the right groupby paths - and put them in the first g jobs (g the number of groups)
+      This would entail running the first four jobs on groupby steps. This seems a little messy because the job filtering function will
+      remove jobs that are not specified to run.  We would have to add an exception to the appropriate job purging function, to ensure that
+      group by steps are saved.
+    
+=cut
 
 sub _add_steps_in_step_struct_to_placeholder_hash {
     #TYPES: ( Num :$job_num ){
@@ -491,11 +504,9 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
             #  * you must groupby wrt a datasource column name. 
             #      - So access the datasource and check whether the field name is relevant
             #      - Figure out which resolved paths belong to each group
-            #  * Imagine if we have two groups - then we are only interested in the first two jobs. 
-            #    But this function gets executed for every job in the datasource. So we resolve the 
-            #    placeholder for each job, and later in _resolve the job numbers in a groupby step 
-            #    are pruned by another function.
-            #    
+            #  * For two groups (g=2) - the rule is that these are executed in the first g jobs. (job0,job1)
+            # 
+            #  * Thus far we do not yet handle groupby when there are job filters   
             
             if( $placeholder =~ /groupby/ ){  
                my $groupby_placeholder_rgx;
@@ -528,8 +539,7 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                my $job_map_hash = $util->datasource_groupby2( $self->pipeline_datasource, @group_names );
                # This gives a hash e.g.: {groupA=> [0,1,2,3], groupB=>[4,5,6]}
                #warn Dumper $job_map_hash;
-               
-               
+                            
                my $job_filter = $self->job_filter;
                my %job_filter_hash = map{ $_ => 1 } @$job_filter if defined($job_filter);
                
@@ -540,20 +550,17 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                
                # if there is a job filter then we have to get the right group index 
                if( defined $job_filter){
-                   $grouped_job_idx = get_grouping_indexes($job_filter,$job_map_hash,$JOB_NUM); 
+                   $grouped_job_idx = $self->get_grouping_indexes($job_filter,$job_map_hash,$JOB_NUM); 
                }
-                              
-               # We are only interested in the for job numbers higher, then you get the first group
-               # this will be implemented later so that you can chose
-               # which group thought someihtng like
-               # [% groupby.type=A.file.txt %]
+               
+               # resolve for this placeholder the set of paths corresponding to the particular group associated with this JOB_NUM                             
                my $grouped_jobs_id = $grouped_jobs[ $grouped_job_idx ];
                my @placeholder_resolved_paths;
                my $jobs = $job_map_hash->{$grouped_jobs_id};
                
                for my $job_num ( @$jobs){
                    if( defined($job_filter) ){ 
-                       #skip adding into @stepfiles if job is in job filter
+                       #skip adding into @placeholder_resolved_paths if job is in job filter
                        next unless exists($job_filter_hash{$job_num} );
                    }
                    if( $output_run_dir[0] eq 'datasource' ) {
@@ -561,7 +568,7 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
                       my @datasource_rows = $t->col( $output_run_dir[1] );
                       push( @placeholder_resolved_paths,$datasource_rows[$job_num] );
                   }else{
-                   push( @placeholder_resolved_paths, $self->_generate_file_output_location($job_num, \@output_run_dir)->stringify );
+                      push( @placeholder_resolved_paths, $self->_generate_file_output_location($job_num, \@output_run_dir)->stringify );
                   }  
                }
                $placeholder_resolved_str = join ' ', @placeholder_resolved_paths;
