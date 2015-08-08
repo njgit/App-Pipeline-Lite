@@ -310,13 +310,6 @@ sub _placeholder_hash_add_item{
    }
 }
 
-# this gives the grouping index when there is 
-# job filter present 
-#
-# if we have a job filter it makes grouping weird
-# we want to put the first g jobs that are the groupbys (g = num of groups)
-# but if you have a job filter then you might not have all the groups but you 
-# still want to maintain something like this:
 
 =comment
 This function gives the grouping index when there is a job filter present. To see why we need to do this
@@ -353,9 +346,6 @@ care about how this is executed and it should be pruned in the groupby pruning s
  
  Of course we require the correct behaviour in the groupby pruning to see this work properly.   
 =cut 
-#
-#
-
 
 sub get_grouping_indexes{
     my $self=shift;
