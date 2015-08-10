@@ -76,6 +76,21 @@ sub uniq {
   return grep { !$seen{$_}++ } @_;
 }
 
+=function all
+  This function is pulled from  List::Util documentation
+  use:
+   Need to create a code reference with the condition
+   $util->any( sub { $_[0] > 1 },  (1,2,3) ) 
+     you can use the $_ instead of $_[0]
+   $util->any( sub { $_ > 1 } , (1,2,3))
+=cut
+sub any {
+  my $code = shift;
+  my @list = @_;
+  my $foo = reduce { $a || $code->(local $_ = $b) } 0, @list;
+}
+
+
 sub datasource_groupby {
   my $self = shift;
   my $datasource_table  =shift;
