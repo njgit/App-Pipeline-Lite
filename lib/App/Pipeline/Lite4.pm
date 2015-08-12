@@ -267,22 +267,22 @@ sub run_pipeline {
 }
 
 sub external_dispatch {
-   # TYPE  Path::Tiny :$dispatcher_exe )  {
-    my $self = shift;
-    my $dispatcher_opt = shift;
-    my ($dispatcher_exe, $opts) = split / /, $dispatcher_opt;
+  # TYPE  Path::Tiny :$dispatcher_exe )  {
+  my $self = shift;
+  my $dispatcher_opt = shift;
+  my ($dispatcher_exe, $opts) = split / /, $dispatcher_opt;
     
-    my $pipeline_graph_file = $self->pipeline_graph_file->absolute;
+  my $pipeline_graph_file = $self->pipeline_graph_file->absolute;
     
-  # ouch 'App_Pipeline_Lite4_Error', "Dispatcher does not exist at $dispatcher_exe" 
-  #  unless $dispatcher_exe->exists;
+  ouch 'App_Pipeline_Lite4_Error', "Dispatcher does not exist at $dispatcher_exe" 
+    unless path($dispatcher_exe)->exists;
     
-     my $dispatcher_path_str = $dispatcher_exe;     
-    ouch  'App_Pipeline_Lite4_Error', "Dispatcher app is not executable" 
-      unless ( -x $dispatcher_path_str);  
+  my $dispatcher_path_str = $dispatcher_exe;     
+  ouch  'App_Pipeline_Lite4_Error', "Dispatcher app is not executable" 
+    unless ( -x $dispatcher_path_str);  
       
-    my $dispatcher_cmd =  qq{ $dispatcher_opt  $pipeline_graph_file };
-    system( $dispatcher_cmd );    
+  my $dispatcher_cmd =  qq{ $dispatcher_opt  $pipeline_graph_file };
+  system( $dispatcher_cmd );    
 }
 
 
