@@ -161,6 +161,44 @@ sub resolve {
    $yaml_outfile->spew( Dump( $self->pipeline_step_struct_resolved ) );
 }
 
+
+=method _resolve
+    The resolver takes something like this: 
+    {'count-all' => {
+                    'condition' => 'once',
+                    'placeholders' => [
+                                        'count-all',
+                                        'jobs.datasource.filename',
+                                        'count-all.sum',
+                                        'count-all.err'
+                                      ],
+                    'cmd' => 'cd [% count-all %]; wc -l [% jobs.datasource.filename %] > [% count-all.sum %] 2>[% count-all.err %]'
+                  },
+    }
+    
+    and converts it to something like this(showing just job3 (starting from job0):
+    
+    {'3' => {    
+              
+              'count-all' => {
+                                    'condition' => 'once',
+                                    'placeholders' => [
+                                                        'count-all',
+                                                        'jobs.datasource.filename',
+                                                        'count-all.sum',
+                                                        'count-all.err'
+                                                      ],
+                                    'cmd' => 'cd /home/user/Desktop/plite-test-once-condition/test-pipeline1/output/run3/job3/count-all; wc -l /home/user/Desktop/plite-test-once-conditio
+n/data/sample4 /home/user/Desktop/plite-test-once-condition/data/sample5 /home/user/Desktop/plite-test-once-condition/data/sample6 /home/user/Desktop/plite-test-once-condition/data/sample
+7 > /home/user/Desktop/plite-test-once-condition/test-pipeline1/output/run3/job3/count-all/sum 2>/home/user/Desktop/plite-test-once-condition/test-pipeline1/output/run3/job3/count-all/er
+r'
+                                  },
+                   }
+      }
+
+
+=cut
+
 sub _resolve {
     my $self = shift;
     #$self->clear_pipeline_step_struct_resolved;
@@ -178,6 +216,7 @@ sub _resolve {
          ##$self->_add_dir_to_placeholder_hash ( dir_name => 'data', dir_path => dir( $self->output_dir->parent ) );
 
          # add in the output files expected for each step to the placeholder hash
+         
          $self->_add_steps_in_step_struct_to_placeholder_hash($row);
          $self->_create_directory_structure_from_placeholder_hash;
 
@@ -198,6 +237,7 @@ sub _resolve {
          $self->_job_filter_on_resolved_step_struct if defined $self->job_filter_str;
          $self->_once_condition_filter_on_resolved_step_struct;
          $self->_groupby_condition_filter_on_resolved_step_struct;
+         #warn Dumper $self->pipeline_step_struct_resolved;
          $self->placeholder_hash({});
     }
     #$self->logger->log( "info", "Final Resolved Step Struct: \n" . Dumper $self->pipeline_step_struct_resolved );
@@ -215,7 +255,7 @@ sub _add_data_source_to_placeholder_hash{
       my $t = $self->pipeline_datasource;
       my @header = $t->header;
       for my $i (0 .. $t->lastCol ) {
-         #print $header[$i], " ", $t->col($i), "\n";
+         #print $header[$i], " ", $t->col($i), "\n";    
          my @datasource_rows = $t->col($i);
          $self->logger->log( "debug", "Datasource col $i : ".$header[$i] . " =>  $datasource_rows[$datasource_row]");
          #adds in the datasource reference here, so that we can deal specially with datasource stuff later in create_directory_structure
@@ -424,6 +464,7 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
     my $self = shift;
     my $JOB_NUM = shift;
     my $step_struct = $self->pipeline_step_struct; # we have placeholders parsed for each step
+
     #warn "JOB_NUM $JOB_NUM";
     foreach my $step_name (keys %$step_struct ){
         $self->logger->log( "debug", "Processing Pipeline to placeholder hash step " . $step_name);
