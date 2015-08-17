@@ -79,7 +79,7 @@ while( @job_ids > 0 ){
 	my $queue = $graph_and_jobs->{ $job }->{$step}->{queue};
  	my $cores = $graph_and_jobs->{ $job }->{$step}->{cores};
  	my %args;
-	$args{-e} = $errorfile if defined($errorfile);
+	$args{-eo} = $errorfile if defined($errorfile);
 	$args{-w} = $dependency_str if @dependent_jobs >0;
 	$args{-J} = $lsf_job_name;
   $args{-R} = "span[hosts=1] select[mem>$mem] rusage[mem=$mem]" if defined($mem);
