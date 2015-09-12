@@ -525,19 +525,19 @@ sub _add_ONCESTEP_in_step_struct_to_placeholder_hash {
         # normal steps of type stepx.file1 or whatever
         # these can still come from several types of other steps 
         my $placeholder_step_form = $self->_placeholder_step_form($placeholder, $step_name);
-        
+        my ($placeholder_step_name) = $self->_parse_steppath_placeholder($placeholder);
         if ( $placeholder_step_form eq 'step.path' ){ 
-            my $step_condition = $step_struct->{$step_name}->{condition};          
-            if( !defined ( $step_condition )){ 
+            my $placeholder_step_condition = $step_struct->{$placeholder_step_name}->{condition};          
+            if( !defined ( $placeholder_step_condition )){ 
                 ouch 'App_Pipeline_Lite4_ERROR', 
                   "Placeholder $placeholder in step $step_name references a normal step (not .once or .groupby) and is inconsistent with 
                     a .once step.";                
-            }elsif ( $step_condition eq 'once' ) {
+            }elsif ( $placeholder_step_condition eq 'once' ) {
                 my $min_job = 0;
                 my $jobs = $self->job_filter;
                 ($min_job) = sort {$a <=> $b} @$jobs if defined($jobs);
-                $placeholder_resolved_str=$self->_resolve_steppath_step_placeholder($placeholder,$step_name, $min_job);
-            }elsif ( $step_condition eq 'groupby' ){
+                $placeholder_resolved_str=$self->_resolve_steppath_step_placeholder($placeholder,$placeholder_step_name, $min_job);
+            }elsif ( $placeholder_step_condition eq 'groupby' ){
                 ouch 'App_Pipeline_Lite4_ERROR', 
                   "Placeholder $placeholder in step $step_name references a groupby step and is inconsistent with 
                     a .once step.";  
@@ -545,15 +545,18 @@ sub _add_ONCESTEP_in_step_struct_to_placeholder_hash {
                 ouch 'App_Pipeline_Lite4_ERROR',"The form of $step_name referenced by the placeholder $placeholder is not recognised by the system";
             }         
         }elsif ( $placeholder_step_form eq 'jobs' ){ 
-            $placeholder_resolved_str=$self->_resolve_jobs_step_placeholder($placeholder,$step_name, $JOB_NUM);
+            # the step_name is purely for logging purposes
+            $placeholder_resolved_str=$self->_resolve_jobs_step_placeholder($placeholder, $step_name,   $JOB_NUM);
         }elsif ( $placeholder_step_form eq 'groupby' ){ 
             # ouch
-            ouch 'App_Pipeline_Lite4_ERROR',"A groupby placeholder exists the .once step $step_name .";
-        }elsif( defined( $placeholder_resolved_str ) ){
-             $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
-             $self->logger->debug("step $step_name. Generated file location for placeholder $placeholder as $placeholder_resolved_str");
+            ouch 'App_Pipeline_Lite4_ERROR',"A groupby placeholder exists in the .once step $step_name .";
         }else{
             ouch 'App_Pipeline_Lite4_ERROR',"The form of the placeholder $placeholder in $step_name is not recognised by the system";
+        }
+        
+        if( defined( $placeholder_resolved_str ) ){
+             $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
+             $self->logger->debug("step $step_name. Generated file location for placeholder $placeholder as $placeholder_resolved_str");
         }
     }
 }
@@ -570,37 +573,32 @@ sub _add_GROUPBYSTEP_in_step_struct_to_placeholder_hash {
         # normal steps of type stepx.file1 or whatever
         # these can still come from several types of other steps 
         my $placeholder_step_form = $self->_placeholder_step_form($placeholder);
-        
+        my ($placeholder_step_name) = $self->_parse_steppath_placeholder($placeholder);
         if ( $placeholder_step_form eq 'step.path' ){ 
-            my $step_condition = $step_struct->{$step_name}->{condition};          
-            if( !defined ( $step_condition )){    
+            my $placeholder_step_condition = $step_struct->{$placeholder_step_name}->{condition};          
+            if( !defined ( $placeholder_step_condition )){    
                  ouch 'App_Pipeline_Lite4_ERROR', 
-                  "Placeholder $placeholder in step $step_name references a normal step ( not a .once or .groupby step) and is inconsistent with 
+                  "Placeholder $placeholder in step $step_name references a normal step ($placeholder_step_name is not a .once or .groupby step) and is inconsistent with 
                     a .groupby step.";                       
-            }elsif ( $step_condition eq 'once' ) {
+            }elsif ( $placeholder_step_condition eq 'once' ) {
                 my $min_job = 0;
                 my $jobs = $self->job_filter;
                 ($min_job) = sort {$a <=> $b} @$jobs if defined($jobs);
-                $placeholder_resolved_str=$self->_resolve_steppath_step_placeholder($placeholder,$step_name, $min_job);
-            }elsif ( $step_condition eq 'groupby' ){ 
+                $placeholder_resolved_str=$self->_resolve_steppath_step_placeholder($placeholder,$placeholder_step_name, $min_job);
+            }elsif ( $placeholder_step_condition eq 'groupby' ){ 
                 # any step.path placeholders in this step will come under this condition as well (since it's a groupby)
                 # for other steps, so long as it's a step that has the same groupby field as this step
                 my $this_step_groupby_field = $step_struct->{$step_name}->{condition_params}->[0];
-                my ($step_name_of_placeholder) = $self->_parse_steppath_placeholder($placeholder);
-                my $placeholder_step_groupby_field = $step_struct->{$step_name}->{condition_params}->[0];
+                my $placeholder_step_groupby_field = $step_struct->{$placeholder_step_name}->{condition_params}->[0];
                 ouch 'App_Pipeline_Lite4_ERROR', "step $step_name has placeholders that refer to different groupby criteria" if $this_step_groupby_field ne $placeholder_step_groupby_field;
-                $placeholder_resolved_str = $self->_resolve_steppath_step_placeholder($placeholder,$step_name_of_placeholder, $JOB_NUM); 
+                $placeholder_resolved_str = $self->_resolve_steppath_step_placeholder($placeholder,$placeholder_step_name, $JOB_NUM); 
             }          
+        }elsif ( $placeholder_step_form eq 'jobs' ){ 
+            # the step_name in this method is purely for logging purposes
+            $placeholder_resolved_str=$self->_resolve_jobs_step_placeholder($placeholder, $step_name, $JOB_NUM);
+        }elsif ( $placeholder_step_form eq 'groupby' ){ 
+            $placeholder_resolved_str=$self->_resolve_groupby_step_placeholder($placeholder, $step_name, $JOB_NUM);
         }
-        
-        if ( $placeholder_step_form eq 'jobs' ){ 
-            $placeholder_resolved_str=$self->_resolve_jobs_step_placeholder($placeholder,$step_name, $JOB_NUM);
-        }
-        
-        if ( $placeholder_step_form eq 'groupby' ){ 
-            $placeholder_resolved_str=$self->_resolve_groupby_step_placeholder($placeholder,$step_name, $JOB_NUM);
-        }
-        
         if( defined( $placeholder_resolved_str ) ){
              $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
              $self->logger->debug("step $step_name. Generated file location for placeholder $placeholder as $placeholder_resolved_str");
@@ -634,29 +632,27 @@ sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
         my $placeholder_resolved_str;
         # normal steps of type stepx.file1 or whatever
         # these can still come from several types of other steps 
-        my $placeholder_step_form = $self->_placeholder_step_form($placeholder, $step_name);
-        
+        my $placeholder_step_form = $self->_placeholder_step_form($placeholder);
+        my ($placeholder_step_name) = $self->_parse_steppath_placeholder($placeholder);
         if ( $placeholder_step_form eq 'step.path' ){ 
-            my $step_condition = $step_struct->{$step_name}->{condition};          
-            if( !defined ( $step_condition )){
-                $placeholder_resolved_str = $self->_resolve_steppath_step_placeholder($placeholder,$step_name, $JOB_NUM);
-            }elsif ( $step_condition eq 'once' ) {
+            my $placeholder_step_condition = $step_struct->{$placeholder_step_name}->{condition};          
+            if( !defined ( $placeholder_step_condition )){
+                $placeholder_resolved_str = $self->_resolve_steppath_step_placeholder($placeholder,$placeholder_step_name, $JOB_NUM);
+            }elsif ( $placeholder_step_condition eq 'once' ) {
                 my $min_job = 0;
                 my $jobs = $self->job_filter;
                 ($min_job) = sort {$a <=> $b} @$jobs if defined($jobs);
-                $placeholder_resolved_str=$self->_resolve_steppath_step_placeholder($placeholder,$step_name, $min_job);
-            }elsif ( $step_condition eq 'groupby' ){
-                #ouch
+                $placeholder_resolved_str=$self->_resolve_steppath_step_placeholder($placeholder,$placeholder_step_name, $min_job);
+            }elsif ( $placeholder_step_condition eq 'groupby' ){
+                ouch 'App_Pipeline_Lite4_ERROR',"A placeholder $placeholder in $step_name references .groupby step when $step_name is not a .groupby step.";
             }
            
+        }elsif ( $placeholder_step_form eq 'jobs' ){ 
+            # the step name in this function is purely for logging purposes
+            $placeholder_resolved_str=$self->_resolve_jobs_step_placeholder($placeholder, $step_name,$JOB_NUM);
+        }elsif ( $placeholder_step_form eq 'groupby' ){ 
+            ouch 'App_Pipeline_Lite4_ERROR',"A groupby placeholder exists in the step $step_name when it is not a .groupby step.";
         }
-        
-        if ( $placeholder_step_form eq 'jobs' ){ 
-        }
-        
-        if ( $placeholder_step_form eq 'groupby' ){ 
-        }
-        
         if( defined( $placeholder_resolved_str ) ){
              $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
              $self->logger->debug("step $step_name. Generated file location for placeholder $placeholder as $placeholder_resolved_str");
@@ -674,6 +670,16 @@ sub _parse_steppath_placeholder {
     my $placeholder_rgx = qr/^([\w\-]+)(\.(.+))*$/; 
     my @steppath;
     if( @steppath= $placeholder =~ $placeholder_rgx ){
+        return @steppath;
+    }
+}
+
+sub _parse_jobs_placeholder {
+    my $self = shift;
+    my $placeholder = shift;
+    my $jobs_placeholder_rgx = qr/jobs\.([\w\-]+)\.(.+)$/; 
+    my @steppath;
+    if( @steppath= $placeholder =~ $jobs_placeholder_rgx ){
         return @steppath;
     }
 }
