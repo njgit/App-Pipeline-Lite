@@ -654,18 +654,58 @@ sub _add_steps_in_step_struct_to_placeholder_hash2 {
         }
         
         # ONCE STEPS 
-        if( !defined( $step_struct->{$step_name}->{condition} ) ){
+        if( $step_struct->{$step_name}->{condition} eq 'once' ){
             $self->_add_ONCESTEP_in_step_struct_to_placeholder_hash($step_name, $JOB_NUM);
         }
        
-        
+        # GROUPBY STEPS
         
     }
 }
 
 sub _add_ONCESTEP_in_step_struct_to_placeholder_hash {
     my $self = shift;
-    my $step_struct = shift;
+    my $step_name = shift;
+    my $JOB_NUM = shift;
+    my $step_struct = $self->pipeline_step_struct;
+    my $placeholders = $step_struct->{$step_name}->{placeholders};
+    #next unless defined($placeholders);
+    
+    foreach my $placeholder ( @$placeholders ) {
+        my $placeholder_resolved_str;
+        # normal steps of type stepx.file1 or whatever
+        # these can still come from several types of other steps 
+        my $placeholder_step_form = $self->_placeholder_step_form($placeholder, $step_name);
+        
+        if ( $placeholder_step_form eq 'step.path' ){ 
+            my $step_condition = $step_struct->{$step_name}->{condition};          
+            if( !defined ( $step_condition )){ 
+                #$placeholder_resolved_str = $self->_resolve_steppath_step_placeholder($placeholder,$step_name, $JOB_NUM);
+                #ouch
+                
+            }elsif ( $step_condition eq 'once' ) {
+                my $min_job = 0;
+                my $jobs = $self->job_filter;
+                ($min_job) = sort {$a <=> $b} @$jobs if defined($jobs);
+                $placeholder_resolved_str=$self->_resolve_steppath_step_placeholder($placeholder,$step_name, $min_job);
+            }elsif ( $step_condition eq 'groupby' ){
+                #ouch
+            }          
+        }
+        
+        if ( $placeholder_step_form eq 'jobs' ){ 
+            $placeholder_resolved_str=$self->_resolve_jobs_step_placeholder($placeholder,$step_name, $JOB_NUM);
+        }
+        
+        if ( $placeholder_step_form eq 'groupby' ){ 
+            # ouch
+        }
+        
+        if( defined( $placeholder_resolved_str ) ){
+             $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
+             $self->logger->debug("step $step_name. Generated file location for placeholder $placeholder as $placeholder_resolved_str");
+        }
+    }
 }
 sub _add_GROUPBYSTEP_in_step_struct_to_placeholder_hash {
     my $self = shift;
@@ -677,12 +717,13 @@ sub _add_GROUPBYSTEP_in_step_struct_to_placeholder_hash {
   In a normal step - one without a condition like once of groupby 
   we need to look at each placeholder and consider the kind of step its
   has come from.
-    A normal step.path form placeholder could refer to a step that is: 
+    Normal step.path form placeholder could refer to a step that is: 
       a) normal
       b) groupby 
       c) once
-    We then have to look at  other placeholer forms such as:
-    
+    We then have to look at  other placeholer forms such as:]
+    jobs.
+    groupby.
     
 =cut
 sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
@@ -696,7 +737,7 @@ sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
     foreach my $placeholder ( @$placeholders ) {
         my $placeholder_resolved_str;
         # normal steps of type stepx.file1 or whatever
-        #  these can still come from several types of other steps though 
+        # these can still come from several types of other steps 
         my $placeholder_step_form = $self->_placeholder_step_form($placeholder, $step_name);
         
         if ( $placeholder_step_form eq 'step.path' ){ 
@@ -725,8 +766,7 @@ sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
              $self->logger->debug("step $step_name. Generated file location for placeholder $placeholder as $placeholder_resolved_str");
         }
     }
-}    
-
+}
 
 # we can have steps of 
 #  * step.path
@@ -784,7 +824,40 @@ sub _resolve_steppath_step_placeholder {
     return $placeholder_resolved_str;
 }
 
+sub _resolve_jobs_step_placeholder {
+    my $self = shift;
+    my $placeholder = shift;
+    my $step_name   = shift;
+    my $JOB_NUM     = shift;
+    my $placeholder_resolved_str;
+    my @output_run_dir;
+    my $jobs_placeholder_rgx = qr/jobs\.([\w\-]+)\.(.+)$/;
+    @output_run_dir=$placeholder =~ $jobs_placeholder_rgx;
+    my @placeholder_resolved_paths; # all the placeholder resolved paths
+    my $num_of_jobs = $self->tot_jobs;
+    for my $job_num ( 0 .. $num_of_jobs -1 ) {
+         if( $output_run_dir[0] eq 'datasource' ) {
+             my $t = $self->pipeline_datasource;
+             my @datasource_rows = $t->col( $output_run_dir[1] );
+             push(  @placeholder_resolved_paths,$datasource_rows[$job_num] );
+         }else{
+             push(  @placeholder_resolved_paths,
+                    $self->_generate_file_output_location(
+                            $job_num, \@output_run_dir)->stringify );
+        }
+    }
+    # JOB FILTER: If we are running with specific job numbers, then we want only those paths associated
+    #             with those job numbers.
+    my $job_filter = $self->job_filter;
+    @placeholder_resolved_paths =  @placeholder_resolved_paths[@$job_filter] if defined ( $job_filter );
+    $placeholder_resolved_str = join ' ',  @placeholder_resolved_paths;
+    $self->logger->debug("step $step_name. Extracted a run dir from: @output_run_dir. Full path is $placeholder_resolved_str");
+    return $placeholder_resolved_str;
+}
 
+sub _resolve_groupby_step_placeholder {
+    
+}
 
 
 
