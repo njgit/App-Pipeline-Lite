@@ -648,11 +648,15 @@ sub _add_steps_in_step_struct_to_placeholder_hash2 {
         my $placeholders = $step_struct->{$step_name}->{placeholders};
         next unless defined($placeholders);
         
-        # NORMAL STEPS WITH NO CONDITIONS
+        # NORMAL STEPS (NO CONDITIONS)
         if( !defined( $step_struct->{$step_name}->{condition} ) ){
             $self->_add_NORMALSTEP_in_step_struct_to_placeholder_hash($step_name, $JOB_NUM);
         }
         
+        # ONCE STEPS 
+        if( !defined( $step_struct->{$step_name}->{condition} ) ){
+            $self->_add_ONCESTEP_in_step_struct_to_placeholder_hash($step_name, $JOB_NUM);
+        }
        
         
         
@@ -670,6 +674,16 @@ sub _add_GROUPBYSTEP_in_step_struct_to_placeholder_hash {
 
 
 =method
+  In a normal step - one without a condition like once of groupby 
+  we need to look at each placeholder and consider the kind of step its
+  has come from.
+    A normal step.path form placeholder could refer to a step that is: 
+      a) normal
+      b) groupby 
+      c) once
+    We then have to look at  other placeholer forms such as:
+    
+    
 =cut
 sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
     my $self = shift;
@@ -683,32 +697,35 @@ sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
         my $placeholder_resolved_str;
         # normal steps of type stepx.file1 or whatever
         #  these can still come from several types of other steps though 
-        if ($self->_placeholder_step_form($placeholder,$step_name) eq 'step.path' ){           
-            if( !defined ( $step_struct->{$step_name}->{condition})){
-                $placeholder_resolved_str=$self->_resolve_normal_step_placeholder($placeholder,$step_name, $JOB_NUM);
-            }elsif ($step_struct->{$step_name}->{condition} = 'once' ) {
-                # add the minimum job number
-            }elsif ($step_struct->{$step_name}->{condition} = 'groupby' ){
-                # ouch
+        my $placeholder_step_form = $self->_placeholder_step_form($placeholder, $step_name);
+        
+        if ( $placeholder_step_form eq 'step.path' ){ 
+            my $step_condition = $step_struct->{$step_name}->{condition};          
+            if( !defined ( $step_condition )){
+                $placeholder_resolved_str = $self->_resolve_steppath_step_placeholder($placeholder,$step_name, $JOB_NUM);
+            }elsif ( $step_condition eq 'once' ) {
+                my $min_job = 0;
+                my $jobs = $self->job_filter;
+                ($min_job) = sort {$a <=> $b} @$jobs if defined($jobs);
+                $placeholder_resolved_str=$self->_resolve_steppath_step_placeholder($placeholder,$step_name, $min_job);
+            }elsif ( $step_condition eq 'groupby' ){
+                #ouch
             }
+           
         }
-        # jobs form placeholders
-          # allowed but this will get done for every job 
-        # groupby form placeholders
-          # not allowed
-        # add to placeholder_hash  
+        
+        if ( $placeholder_step_form eq 'jobs' ){ 
+        }
+        
+        if ( $placeholder_step_form eq 'groupby' ){ 
+        }
+        
         if( defined( $placeholder_resolved_str ) ){
-                $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
-                $self->logger->debug("step $step_name. Generated file location for placeholder $placeholder as $placeholder_resolved_str");
+             $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
+             $self->logger->debug("step $step_name. Generated file location for placeholder $placeholder as $placeholder_resolved_str");
         }
     }
-    warn "HERE WE ARE YOU JOKERS";
-}
-
-#sub _placeholder_step_type {
-#    my $self = shift;
-#    return  
-#}
+}    
 
 
 # we can have steps of 
@@ -736,8 +753,8 @@ sub _placeholder_step_form {
     }
 }
 
-#HERE TOO - just make this acceptable
-sub _resolve_normal_step_placeholder {
+#resolves placeholders of the form of step.path
+sub _resolve_steppath_step_placeholder {
     my $self = shift;
     my $placeholder = shift;
     my $step_name   = shift;
@@ -766,6 +783,7 @@ sub _resolve_normal_step_placeholder {
     $self->logger->debug("step $step_name. Extracted a run dir from: @output_run_dir. Full path is $placeholder_resolved_str ");
     return $placeholder_resolved_str;
 }
+
 
 
 
