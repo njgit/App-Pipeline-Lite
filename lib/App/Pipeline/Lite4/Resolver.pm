@@ -647,9 +647,14 @@ sub _add_steps_in_step_struct_to_placeholder_hash2 {
         $self->logger->log( "debug", "Processing Pipeline to placeholder hash step " . $step_name);
         my $placeholders = $step_struct->{$step_name}->{placeholders};
         next unless defined($placeholders);
+        
+        # NORMAL STEPS WITH NO CONDITIONS
         if( !defined( $step_struct->{$step_name}->{condition} ) ){
             $self->_add_NORMALSTEP_in_step_struct_to_placeholder_hash($step_name, $JOB_NUM);
         }
+        
+       
+        
         
     }
 }
@@ -662,6 +667,8 @@ sub _add_GROUPBYSTEP_in_step_struct_to_placeholder_hash {
     my $self = shift;
     my $step_struct = shift;
 }
+
+
 =method
 =cut
 sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
@@ -674,17 +681,21 @@ sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
     
     foreach my $placeholder ( @$placeholders ) {
         my $placeholder_resolved_str;
-        # normal steps of type #stepx.file1 or whatever
+        # normal steps of type stepx.file1 or whatever
         #  these can still come from several types of other steps though 
-        if ($self->_placeholder_step_type($placeholder,$step_name) eq 'normal' ){           
+        if ($self->_placeholder_step_form($placeholder,$step_name) eq 'step.path' ){           
             if( !defined ( $step_struct->{$step_name}->{condition})){
                 $placeholder_resolved_str=$self->_resolve_normal_step_placeholder($placeholder,$step_name, $JOB_NUM);
+            }elsif ($step_struct->{$step_name}->{condition} = 'once' ) {
+                # add the minimum job number
+            }elsif ($step_struct->{$step_name}->{condition} = 'groupby' ){
+                # ouch
             }
         }
-        # groupby steps
-          # not fine
-        # once steps
-          # fine
+        # jobs form placeholders
+          # allowed but this will get done for every job 
+        # groupby form placeholders
+          # not allowed
         # add to placeholder_hash  
         if( defined( $placeholder_resolved_str ) ){
                 $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
@@ -694,21 +705,35 @@ sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
     warn "HERE WE ARE YOU JOKERS";
 }
 
-# we can either 
-sub _placeholder_step_type {
+#sub _placeholder_step_type {
+#    my $self = shift;
+#    return  
+#}
+
+
+# we can have steps of 
+#  * step.path
+#  * groupby.field.step.path 
+#  * jobs.step.path 
+
+sub _placeholder_step_form {
     my $self = shift;
     my $placeholder = shift;
     my $step_name   = shift;
     my $placeholder_rgx = qr/^($step_name)(\.(.+))*$/;
     
     if($placeholder =~ $placeholder_rgx ){
-        return "normal";
-        #_resolve_normal_step_placeholder($placeholder)
+        return "step.path";
     }
-    #  return once
-    #elseif 
-    # return 'groupby'
-    # HERE!! return the step type 
+    
+    my $jobs_placeholder_rgx = qr/jobs\.([\w\-]+)\.(.+)$/;
+    if($placeholder =~ $jobs_placeholder_rgx){
+        return "jobs";    
+    }
+    
+    if( $placeholder =~ /groupby/ ){  
+        return "groupby";
+    }
 }
 
 #HERE TOO - just make this acceptable
