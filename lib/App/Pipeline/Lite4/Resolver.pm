@@ -217,7 +217,8 @@ sub _resolve {
 
          # add in the output files expected for each step to the placeholder hash
          
-         $self->_add_steps_in_step_struct_to_placeholder_hash($row);
+         #$self->_add_steps_in_step_struct_to_placeholder_hash($row);
+         $self->_add_steps_in_step_struct_to_placeholder_hash2($row);
          $self->_create_directory_structure_from_placeholder_hash;
 
          # add software to placeholder hash - MUST GO AFTER CREATE DIRECTORY
@@ -609,6 +610,138 @@ sub _add_steps_in_step_struct_to_placeholder_hash {
    }
    #warn Dumper $self->placeholder_hash;
 }
+
+=method 
+    clean up of _add_steps_in_step_struct_to_placeholder_hash
+    we will handle three types of steps here:
+      * Normal Steps
+      * Groupby Steps
+      * Once Steps
+      
+    Under each of these steps we need to handle the placeholders differently
+      *Normal Steps:
+         - steps that originated from previous step types:
+             Normal Step Placeholder  - fine
+             Once Step Placeholder    - fine
+             Groupby Step Placeholder - not fine - in future it might be possible to refer to a groupby class
+         - jobs. placeholder        - fine
+         - groupby placeholder      - fine?  - should not be fine
+      *Groupby Steps
+         - steps that originated from previous step types:
+             Normal Step Placeholder  - not fine 
+             Once Step Placeholder    - fine
+             Groupby Step Placeholder - fine under certain circumstances
+         - jobs. placeholder        - fine
+         - groupby placeholder      - fine with condition 
+        
+=cut
+
+sub _add_steps_in_step_struct_to_placeholder_hash2 {
+    #TYPES: ( Num :$job_num ){
+    my $self    = shift;
+    my $JOB_NUM = shift;
+    my $step_struct = $self->pipeline_step_struct; # we have placeholders parsed for each step
+
+    #warn "JOB_NUM $JOB_NUM";
+    foreach my $step_name (keys %$step_struct ){
+        $self->logger->log( "debug", "Processing Pipeline to placeholder hash step " . $step_name);
+        my $placeholders = $step_struct->{$step_name}->{placeholders};
+        next unless defined($placeholders);
+        if( !defined( $step_struct->{$step_name}->{condition} ) ){
+            $self->_add_NORMALSTEP_in_step_struct_to_placeholder_hash($step_name, $JOB_NUM);
+        }
+        
+    }
+}
+
+sub _add_ONCESTEP_in_step_struct_to_placeholder_hash {
+    my $self = shift;
+    my $step_struct = shift;
+}
+sub _add_GROUPBYSTEP_in_step_struct_to_placeholder_hash {
+    my $self = shift;
+    my $step_struct = shift;
+}
+=method
+=cut
+sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
+    my $self = shift;
+    my $step_name = shift;
+    my $JOB_NUM = shift;
+    my $step_struct = $self->pipeline_step_struct;
+    my $placeholders = $step_struct->{$step_name}->{placeholders};
+    #next unless defined($placeholders);
+    
+    foreach my $placeholder ( @$placeholders ) {
+        my $placeholder_resolved_str;
+        # normal steps 
+        if ($self->_placeholder_step_type($placeholder,$step_name) eq 'normal' ){
+           $placeholder_resolved_str=$self->_resolve_normal_step_placeholder($placeholder,$step_name, $JOB_NUM);
+           # fine
+           # process 
+        }
+        # groupby steps
+          # not fine
+        # once steps
+          # fine
+        # add to placeholder_hash  
+        if( defined( $placeholder_resolved_str ) ){
+                $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
+                $self->logger->debug("step $step_name. Generated file location for placeholder $placeholder as $placeholder_resolved_str");
+        }
+    }
+}
+
+# we can either 
+sub _placeholder_step_type {
+    my $self = shift;
+    my $placeholder = shift;
+    my $step_name   = shift;
+    my $placeholder_rgx = qr/^($step_name)(\.(.+))*$/;
+    
+    if($placeholder =~ $placeholder_rgx ){
+        return "normal";
+        #_resolve_normal_step_placeholder($placeholder)
+    }
+    #  return once
+    #elseif 
+    # return 'groupby'
+    # HERE!! return the step type 
+}
+
+#HERE TOO - just make this acceptable
+sub _resolve_normal_step_placeholder {
+    my $self = shift;
+    my $placeholder = shift;
+    my $step_name   = shift;
+    my $JOB_NUM     = shift;
+    my $placeholder_resolved_str;
+    my @output_run_dir;
+            
+    #==== case 1. stepX.fileY ====
+    $self->logger->debug("step $step_name. Processing $placeholder");
+    my $placeholder_rgx = qr/^($step_name)(\.(.+))*$/;
+    @output_run_dir = $placeholder =~ $placeholder_rgx ;
+    $self->logger->debug("step $step_name. Got " . Dumper(@output_run_dir) . " from $placeholder");
+    # we don't want [1] - the dot, so @output_run_dir is 2 length array
+    @output_run_dir = @output_run_dir[0,2];
+    if( defined $output_run_dir[1] ){ 
+            # if the 2nd element is defined e.g. normally a filename like note.txt                 
+           $placeholder_resolved_str = $self->_generate_file_output_location($JOB_NUM, \@output_run_dir)->stringify;                  
+    }elsif (  defined $output_run_dir[0]  ) {
+           #case where only the step name exists
+           pop @output_run_dir; # remove last entry because if second element is not defined array = ("stepname",undef) 
+           $placeholder_resolved_str = $self->_generate_file_output_location($JOB_NUM, \@output_run_dir)->stringify;
+           #warn "PLACEHOLDER", $placeholder;
+           #warn "OUTPUT RUN DIR (NORMAL PLCHOLDER) ". Dumper @output_run_dir;
+           #warn "OUTPUTFILES(NORMAL PLCHOLDER) ".$output_files;
+    }
+    $self->logger->debug("step $step_name. Extracted a run dir from: @output_run_dir. Full path is $placeholder_resolved_str ");
+    return $placeholder_resolved_str;
+}
+
+
+
 
 =method _create_directory_structure_from_placeholder_hash
   At the moment we  allow directory with 'dir' in the name
