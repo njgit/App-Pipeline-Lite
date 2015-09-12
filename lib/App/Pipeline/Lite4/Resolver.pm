@@ -460,7 +460,6 @@ The way it seems like this might work is:
     
 =cut
 
-
 =method 
     clean up of _add_steps_in_step_struct_to_placeholder_hash
     we will handle three types of steps here:
@@ -501,16 +500,13 @@ sub _add_steps_in_step_struct_to_placeholder_hash2 {
         # NORMAL STEPS (NO CONDITIONS)
         if( !defined( $step_struct->{$step_name}->{condition} ) ){
             $self->_add_NORMALSTEP_in_step_struct_to_placeholder_hash($step_name, $JOB_NUM);
-        }
-        
-        # ONCE STEPS 
-        if( $step_struct->{$step_name}->{condition} eq 'once' ){
+        }elsif( $step_struct->{$step_name}->{condition} eq 'once' ){ # ONCE STEPS 
             $self->_add_ONCESTEP_in_step_struct_to_placeholder_hash($step_name, $JOB_NUM);
-        }
-       
-        # GROUPBY STEPS
-        if ( $step_struct->{$step_name}->{condition} eq 'groupby'){
+        }elsif ( $step_struct->{$step_name}->{condition} eq 'groupby'){ # GROUPBY STEPS
             $self->_add_GROUPBYSTEP_in_step_struct_to_placeholder_hash($step_name,$JOB_NUM);
+        }else{
+            $self->logger->log( "debug", 
+             "$step_name did not match any of normal, once, or groupby. This means it's placeholders are not added into the system");
         }
         
     }
@@ -533,30 +529,31 @@ sub _add_ONCESTEP_in_step_struct_to_placeholder_hash {
         if ( $placeholder_step_form eq 'step.path' ){ 
             my $step_condition = $step_struct->{$step_name}->{condition};          
             if( !defined ( $step_condition )){ 
-                #$placeholder_resolved_str = $self->_resolve_steppath_step_placeholder($placeholder,$step_name, $JOB_NUM);
-                #ouch
-                
+                ouch 'App_Pipeline_Lite4_ERROR', 
+                  "Placeholder $placeholder in step $step_name references a normal step (not .once or .groupby) and is inconsistent with 
+                    a .once step.";                
             }elsif ( $step_condition eq 'once' ) {
                 my $min_job = 0;
                 my $jobs = $self->job_filter;
                 ($min_job) = sort {$a <=> $b} @$jobs if defined($jobs);
                 $placeholder_resolved_str=$self->_resolve_steppath_step_placeholder($placeholder,$step_name, $min_job);
             }elsif ( $step_condition eq 'groupby' ){
-                #ouch
-            }          
-        }
-        
-        if ( $placeholder_step_form eq 'jobs' ){ 
+                ouch 'App_Pipeline_Lite4_ERROR', 
+                  "Placeholder $placeholder in step $step_name references a groupby step and is inconsistent with 
+                    a .once step.";  
+            }else{
+                ouch 'App_Pipeline_Lite4_ERROR',"The form of $step_name referenced by the placeholder $placeholder is not recognised by the system";
+            }         
+        }elsif ( $placeholder_step_form eq 'jobs' ){ 
             $placeholder_resolved_str=$self->_resolve_jobs_step_placeholder($placeholder,$step_name, $JOB_NUM);
-        }
-        
-        if ( $placeholder_step_form eq 'groupby' ){ 
+        }elsif ( $placeholder_step_form eq 'groupby' ){ 
             # ouch
-        }
-        
-        if( defined( $placeholder_resolved_str ) ){
+            ouch 'App_Pipeline_Lite4_ERROR',"A groupby placeholder exists the .once step $step_name .";
+        }elsif( defined( $placeholder_resolved_str ) ){
              $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
              $self->logger->debug("step $step_name. Generated file location for placeholder $placeholder as $placeholder_resolved_str");
+        }else{
+            ouch 'App_Pipeline_Lite4_ERROR',"The form of the placeholder $placeholder in $step_name is not recognised by the system";
         }
     }
 }
@@ -576,8 +573,10 @@ sub _add_GROUPBYSTEP_in_step_struct_to_placeholder_hash {
         
         if ( $placeholder_step_form eq 'step.path' ){ 
             my $step_condition = $step_struct->{$step_name}->{condition};          
-            if( !defined ( $step_condition )){                
-                #ouch                              
+            if( !defined ( $step_condition )){    
+                 ouch 'App_Pipeline_Lite4_ERROR', 
+                  "Placeholder $placeholder in step $step_name references a normal step ( not a .once or .groupby step) and is inconsistent with 
+                    a .groupby step.";                       
             }elsif ( $step_condition eq 'once' ) {
                 my $min_job = 0;
                 my $jobs = $self->job_filter;
