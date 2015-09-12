@@ -674,11 +674,12 @@ sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
     
     foreach my $placeholder ( @$placeholders ) {
         my $placeholder_resolved_str;
-        # normal steps 
-        if ($self->_placeholder_step_type($placeholder,$step_name) eq 'normal' ){
-           $placeholder_resolved_str=$self->_resolve_normal_step_placeholder($placeholder,$step_name, $JOB_NUM);
-           # fine
-           # process 
+        # normal steps of type #stepx.file1 or whatever
+        #  these can still come from several types of other steps though 
+        if ($self->_placeholder_step_type($placeholder,$step_name) eq 'normal' ){           
+            if( !defined ( $step_struct->{$step_name}->{condition})){
+                $placeholder_resolved_str=$self->_resolve_normal_step_placeholder($placeholder,$step_name, $JOB_NUM);
+            }
         }
         # groupby steps
           # not fine
@@ -690,6 +691,7 @@ sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
                 $self->logger->debug("step $step_name. Generated file location for placeholder $placeholder as $placeholder_resolved_str");
         }
     }
+    warn "HERE WE ARE YOU JOKERS";
 }
 
 # we can either 
