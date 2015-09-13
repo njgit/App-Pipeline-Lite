@@ -636,11 +636,13 @@ sub _add_GROUPBYSTEP_in_step_struct_to_placeholder_hash {
       
       
     We then have to look at  other placeholer forms such as:
-    jobs.
-    groupby.
+    [% jobs...    %]
+    [% groupby....%]
     
     We only need to process a-i) above in the a) category because the other steps will already resolve and add
     the placeholder to the placeholder_hash
+    
+    In the c category we have to ensure that we refer to only minimum/job0 job 
     
 =cut
 sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
@@ -758,14 +760,7 @@ sub _resolve_steppath_step_placeholder {
     # we don't want [1] - the dot, so @output_run_dir is 2 length array
     @output_run_dir = @output_run_dir[0,2];
     if( defined $output_run_dir[1] ){ 
-            # if the 2nd element is defined e.g. normally a filename like note.txt
-            #if( $output_run_dir[0] eq 'datasource' ) {
-            #    my $t = $self->pipeline_datasource;
-            #    my @datasource_rows = $t->col( $output_run_dir[1] );
-            #    $placeholder_resolved_str = $datasource_rows[$JOB_NUM];
-           #}else{                 
-               $placeholder_resolved_str = $self->_generate_file_output_location($JOB_NUM, \@output_run_dir)->stringify;                  
-           #}
+          $placeholder_resolved_str = $self->_generate_file_output_location($JOB_NUM, \@output_run_dir)->stringify;                  
     }elsif (  defined $output_run_dir[0]  ) {
            #case where only the step name exists
            pop @output_run_dir; # remove last entry because if second element is not defined array = ("stepname",undef) 
