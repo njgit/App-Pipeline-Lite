@@ -484,7 +484,21 @@ The way it seems like this might work is:
          - groupby placeholder      - fine with condition 
         
 =cut
+=method
+ Remember this is essentially just adding to a **placeholder_hash** 
+ which looks like:
+   'step1' => {
+          'filename' => '/path/to/filename'
+          'err'      => '/path/to/err'
+   }
+   'step2' => {
+   }
+   ...
 
+  This placeholder_hash is being built for each row in the datasource(see _resolve), then added to the  pipeline_step_struct_resolved
+  hash. Then it is cleaned out, and the next row is processed. So this function here is being called once per datasource 
+  row and then adding each time to placeholder_hash.
+=cut 
 sub _add_steps_in_step_struct_to_placeholder_hash2 {
     #TYPES: ( Num :$job_num ){
     my $self    = shift;
@@ -500,9 +514,11 @@ sub _add_steps_in_step_struct_to_placeholder_hash2 {
         # NORMAL STEPS (NO CONDITIONS)
         if( !defined( $step_struct->{$step_name}->{condition} ) ){
             $self->_add_NORMALSTEP_in_step_struct_to_placeholder_hash($step_name, $JOB_NUM);
-        }elsif( $step_struct->{$step_name}->{condition} eq 'once' ){ # ONCE STEPS 
+        }elsif( $step_struct->{$step_name}->{condition} eq 'once' ){ 
+        # ONCE STEPS 
             $self->_add_ONCESTEP_in_step_struct_to_placeholder_hash($step_name, $JOB_NUM);
-        }elsif ( $step_struct->{$step_name}->{condition} eq 'groupby'){ # GROUPBY STEPS
+        }elsif ( $step_struct->{$step_name}->{condition} eq 'groupby'){ 
+        # GROUPBY STEPS    
             $self->_add_GROUPBYSTEP_in_step_struct_to_placeholder_hash($step_name,$JOB_NUM);
         }else{
             $self->logger->log( "debug", 
@@ -611,13 +627,20 @@ sub _add_GROUPBYSTEP_in_step_struct_to_placeholder_hash {
   In a normal step - one without a condition like once of groupby 
   we need to look at each placeholder and consider the kind of step its
   has come from.
-    Normal step.path form placeholder could refer to a step that is: 
+    The [% step.path %] form placeholder could refer to a step that is: 
       a) normal
+         i)   with the same step we are currently processing
+         ii)  references a different step         
       b) groupby 
       c) once
-    We then have to look at  other placeholer forms such as:]
+      
+      
+    We then have to look at  other placeholer forms such as:
     jobs.
     groupby.
+    
+    We only need to process a-i) above in the a) category because the other steps will already resolve and add
+    the placeholder to the placeholder_hash
     
 =cut
 sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
@@ -635,9 +658,20 @@ sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
         my $placeholder_step_form = $self->_placeholder_step_form($placeholder);
         my ($placeholder_step_name) = $self->_parse_steppath_placeholder($placeholder);
         if ( $placeholder_step_form eq 'step.path' ){ 
-            my $placeholder_step_condition = $step_struct->{$placeholder_step_name}->{condition};          
+            my $placeholder_step_condition;
+            if( exists $step_struct->{$placeholder_step_name} ){
+                # we need to test whether it exists, otherwise, due to autovivication, suddenly we will
+                # have create a step in our $step_struct e.g. datasource or input, which are both 
+                # of the form step.path - but shouldn't be added to the step_struct (nothing should be added to this)
+                $placeholder_step_condition = $step_struct->{$placeholder_step_name}->{condition};          
+            }
             if( !defined ( $placeholder_step_condition )){
-                $placeholder_resolved_str = $self->_resolve_steppath_step_placeholder($placeholder,$placeholder_step_name, $JOB_NUM);
+                if( $placeholder_step_name eq $step_name){
+                    # we only need to worry about the step.path that have the step name the same as this current step 
+                    # the other placeholders will be added either on other steps, or in the case of a datasource added
+                    # by it's own method
+                    $placeholder_resolved_str = $self->_resolve_steppath_step_placeholder($placeholder,$placeholder_step_name, $JOB_NUM);
+                }
             }elsif ( $placeholder_step_condition eq 'once' ) {
                 my $min_job = 0;
                 my $jobs = $self->job_filter;
@@ -648,7 +682,7 @@ sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
             }
            
         }elsif ( $placeholder_step_form eq 'jobs' ){ 
-            # the step name in this function is purely for logging purposes
+            # the $step_name in this function is purely for logging purposes in the method
             $placeholder_resolved_str=$self->_resolve_jobs_step_placeholder($placeholder, $step_name,$JOB_NUM);
         }elsif ( $placeholder_step_form eq 'groupby' ){ 
             ouch 'App_Pipeline_Lite4_ERROR',"A groupby placeholder exists in the step $step_name when it is not a .groupby step.";
@@ -724,8 +758,14 @@ sub _resolve_steppath_step_placeholder {
     # we don't want [1] - the dot, so @output_run_dir is 2 length array
     @output_run_dir = @output_run_dir[0,2];
     if( defined $output_run_dir[1] ){ 
-            # if the 2nd element is defined e.g. normally a filename like note.txt                 
-           $placeholder_resolved_str = $self->_generate_file_output_location($JOB_NUM, \@output_run_dir)->stringify;                  
+            # if the 2nd element is defined e.g. normally a filename like note.txt
+            #if( $output_run_dir[0] eq 'datasource' ) {
+            #    my $t = $self->pipeline_datasource;
+            #    my @datasource_rows = $t->col( $output_run_dir[1] );
+            #    $placeholder_resolved_str = $datasource_rows[$JOB_NUM];
+           #}else{                 
+               $placeholder_resolved_str = $self->_generate_file_output_location($JOB_NUM, \@output_run_dir)->stringify;                  
+           #}
     }elsif (  defined $output_run_dir[0]  ) {
            #case where only the step name exists
            pop @output_run_dir; # remove last entry because if second element is not defined array = ("stepname",undef) 
