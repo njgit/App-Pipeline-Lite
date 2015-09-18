@@ -734,6 +734,10 @@ sub _placeholder_step_form {
         return "groupby";
     }
     
+    if( $placeholder =~ /^input/ ){  
+        return "input";
+    }
+    
     # if it's not a jobs or groupby placeholder it's of the form step.path    
     my $placeholder_rgx = qr/^([\w\-]+)(\.(.+))*$/;
     
