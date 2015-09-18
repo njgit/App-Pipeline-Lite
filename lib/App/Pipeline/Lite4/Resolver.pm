@@ -566,6 +566,8 @@ sub _add_ONCESTEP_in_step_struct_to_placeholder_hash {
         }elsif ( $placeholder_step_form eq 'groupby' ){ 
             # ouch
             ouch 'App_Pipeline_Lite4_ERROR',"A groupby placeholder exists in the .once step $step_name .";
+        }elsif ( $placeholder_step_form eq 'input' ){
+            # no need to do anything
         }else{
             ouch 'App_Pipeline_Lite4_ERROR',"The form of the placeholder $placeholder in $step_name is not recognised by the system";
         }
@@ -614,6 +616,10 @@ sub _add_GROUPBYSTEP_in_step_struct_to_placeholder_hash {
             $placeholder_resolved_str=$self->_resolve_jobs_step_placeholder($placeholder, $step_name, $JOB_NUM);
         }elsif ( $placeholder_step_form eq 'groupby' ){ 
             $placeholder_resolved_str=$self->_resolve_groupby_step_placeholder($placeholder, $step_name, $JOB_NUM);
+        }elsif ( $placeholder_step_form eq 'input' ){
+            # no need to do anything
+        }else{
+            ouch 'App_Pipeline_Lite4_ERROR',"The form of the placeholder $placeholder in $step_name is not recognised by the system";
         }
         if( defined( $placeholder_resolved_str ) ){
              $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
@@ -688,6 +694,10 @@ sub _add_NORMALSTEP_in_step_struct_to_placeholder_hash {
             $placeholder_resolved_str=$self->_resolve_jobs_step_placeholder($placeholder, $step_name,$JOB_NUM);
         }elsif ( $placeholder_step_form eq 'groupby' ){ 
             ouch 'App_Pipeline_Lite4_ERROR',"A groupby placeholder exists in the step $step_name when it is not a .groupby step.";
+        }elsif ( $placeholder_step_form eq 'input' ){
+            # no need to do anything
+        }else{
+            ouch 'App_Pipeline_Lite4_ERROR',"The form of the placeholder $placeholder in $step_name is not recognised by the system";
         }
         if( defined( $placeholder_resolved_str ) ){
              $self->_placeholder_hash_add_item( $placeholder, $placeholder_resolved_str); #in order key,value
