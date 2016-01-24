@@ -7,6 +7,7 @@ use Term::ReadLine;
 use Path::Tiny;
 use Time::Piece;
 use Data::Dumper;
+use List::Util qw(reduce);
 extends 'App::Pipeline::Lite4::Base';
  
 use Ouch;
