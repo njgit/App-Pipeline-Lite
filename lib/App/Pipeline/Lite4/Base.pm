@@ -35,10 +35,13 @@ has logconffile      => ( isa => Path, is => 'rw',  lazy_build => 1);
 
 has output_dir       => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build => 1 );
 has input_dir        => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build =>1  );
+has input_ini        => (isa => 'Config::Tiny', is => 'rw', lazy_build => 1 );
+has input_ini_file   => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build =>1  );
 has sys_dir          => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build =>1  );
 has software_dir     => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build =>1  );
 has software_ini      => (isa => 'Config::Tiny', is => 'rw', lazy_build => 1 );
 has software_ini_file => ( isa => Path, is => 'rw',  coerce => 1,  lazy_build =>1  );
+
 has test_data_file   => ( isa => Path, is => 'rw', coerce => 1,  lazy_build =>1  );
 has datasource_file  => ( isa => Path, is => 'rw', coerce => 1,  lazy_build =>1  );
 has datasource_resolved_file  => ( isa => Path, is => 'rw', coerce => 1,  lazy_build =>1  );
@@ -223,6 +226,22 @@ sub _build_input_dir {
     return path($input_dir) if(defined( $input_dir)) ;
     return path( $self->pipeline_dir, 'input'  ); 
 }
+
+sub _build_input_ini_file {
+   my $self = shift;  
+   my $file = path($self->input_dir, 'software.ini');
+   return $file;
+}
+
+sub _build_input_ini {
+    my $self = shift;
+    my $cf = Config::Tiny->new;
+    #if no config file then means nothing has been set.
+    return $cf unless $self->input_ini_file->exists;
+    my $conf = $cf->read( $self->input_ini_file->absolute->stringify ) or ouch 'badfile' , "Cannot read config file ".$cf->errstr; 
+    return $conf;
+}
+
 
 
 sub _build_symlink_dir {
