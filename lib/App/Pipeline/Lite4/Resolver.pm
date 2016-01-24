@@ -307,9 +307,17 @@ sub _add_input_files_to_placeholder_hash {
    }
     #add to placeholder;
     for my $i (0 .. $#files) {
-       $self->_placeholder_hash_add_item( "input.".$files[$i]->basename,
-                                           $files[$i]->stringify );
+       $self->_placeholder_hash_add_item( "input.".$files[$i]->basename, $files[$i]->stringify )
+        unless $files[$i]->stringify eq $self->input_ini_file->stringify;;
     }
+    
+    # we then need to add the input files in the input.ini file
+    return unless defined $self->input_ini;
+    return unless $self->input_ini_file->exists;
+    foreach my $input_name ( keys %{ $self->input_ini->{_} }  ) {
+        $self->_placeholder_hash_add_item(  "input.$input_name", $self->input_ini->{_}->{$input_name} );
+    }
+    
 }
 
 # placeholder hash is where we have {step0}{file1} = value
