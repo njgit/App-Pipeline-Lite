@@ -229,7 +229,7 @@ sub _build_input_dir {
 
 sub _build_input_ini_file {
    my $self = shift;  
-   my $file = path($self->input_dir, 'software.ini');
+   my $file = path($self->input_dir, 'input.ini');
    return $file;
 }
 
