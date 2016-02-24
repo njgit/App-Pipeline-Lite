@@ -96,6 +96,7 @@ sub symlink {
             if(defined($condition) && $condition eq 'groupby'){
                my $condition_params = $job->{$step}->{condition_params};
                $job_ids = $self->_get_job_ids($id_field,$datasource,$condition_params);
+               @$job_ids = sort @$job_ids;
                my $num_jobs = scalar @$job_ids;
                #warn "groupby step in symlink";
                next if $job_num >= $num_jobs ;
