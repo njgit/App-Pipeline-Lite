@@ -207,8 +207,7 @@ sub _resolve {
     foreach my $row ( 0 .. $self->pipeline_datasource->lastRow ) {
          $self->logger->log("debug", "=== Job $row  ===");
          $self->_add_data_source_to_placeholder_hash( $row);
-          #add input file directory to placeholder hash
-         $self->_add_input_files_to_placeholder_hash;
+         
 
          # add globals to placeholder hash
          ##$self->_add_dir_to_placeholder_hash ( dir_name => 'global', dir_path => dir( $self->output_dir , 'run' . ($self->current_run_num) ));
@@ -224,6 +223,10 @@ sub _resolve {
          # add software to placeholder hash - MUST GO AFTER CREATE DIRECTORY
          # OTHERWISE DIRECTORIES WILL BE MADE FOR SOFTWARE
          $self->_add_software_to_placeholder_hash;
+
+         # add input file directory to placeholder hash - MUST GO AFTER CREATE DIRECTORY
+         # OTHERWISE DIRECTORIES WILL BE MADE FOR INPUT 
+         $self->_add_input_files_to_placeholder_hash;
 
          # add in the output files expected for each step to the placeholder hash
          $self->_add_expected_output_files_to_placeholder_hash( $row);
