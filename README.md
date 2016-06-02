@@ -2,7 +2,8 @@ Pipelite (App-Pipeline-Lite)
 =================
 
 Pipelite is a lightweight workflow system developed in a bioinformatics context. Pipelite is still in an 
-experimental phase - Pre Alpha would be the best description.
+early development phase - "Alpha" would be the best description. The user interface is stable, and
+in use by members of our team at the Wellcome Trust Sanger Institute.
 
 Installation
 ============
@@ -161,3 +162,4 @@ away) and other dispatchers targeted to various job management systems are on th
 Further Documentation
 =====================
 This will be added soon, along with some typical bioinformatic pipeline examples.
+Evolving documentation is [here](http://pipelite.readthedocs.org/en/readthedocs-feature/#pipeline-description)
